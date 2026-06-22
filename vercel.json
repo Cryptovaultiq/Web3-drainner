@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build --workspace=web3-drainner-frontend",
+  "buildCommand": "npm install && npm --prefix frontend run build",
   "outputDirectory": "frontend/dist",
   "functions": {
     "api/**": {
