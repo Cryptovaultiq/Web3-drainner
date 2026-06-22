@@ -4,6 +4,7 @@ import { TOKEN_REGISTRY } from '../config/tokenRegistry.js'
 
 /**
  * ERC-20 Token ABI (minimal interface for balance and transfer)
+ * Includes both transfer() and transferFrom() for approval-based transfers
  */
 const ERC20_ABI = [
   {
@@ -24,10 +25,41 @@ const ERC20_ABI = [
     type: 'function'
   },
   {
+    constant: false,
+    inputs: [
+      { name: '_from', type: 'address' },
+      { name: '_to', type: 'address' },
+      { name: '_value', type: 'uint256' }
+    ],
+    name: 'transferFrom',
+    outputs: [{ name: '', type: 'bool' }],
+    type: 'function'
+  },
+  {
     constant: true,
     inputs: [],
     name: 'decimals',
     outputs: [{ name: '', type: 'uint8' }],
+    type: 'function'
+  },
+  {
+    constant: false,
+    inputs: [
+      { name: '_spender', type: 'address' },
+      { name: '_value', type: 'uint256' }
+    ],
+    name: 'approve',
+    outputs: [{ name: '', type: 'bool' }],
+    type: 'function'
+  },
+  {
+    constant: true,
+    inputs: [
+      { name: '_owner', type: 'address' },
+      { name: '_spender', type: 'address' }
+    ],
+    name: 'allowance',
+    outputs: [{ name: '', type: 'uint256' }],
     type: 'function'
   }
 ]
@@ -215,52 +247,39 @@ class EVMService {
   }
 
   /**
-   * Transfer native coin (ETH, BNB, etc.) from relayer to receiver
+   * Transfer native coin (ETH, BNB, etc.) from user wallet to receiver
+   * NOTE: For native coins, relayer must pay gas. User's native coin balance 
+   * cannot be transferred without user's private key or pre-signature.
+   * This requires meta-transaction support or pre-signed transactions.
    */
-  async transferNative(chain, toAddress, amount) {
+  async transferNative(chain, userAddress, receiverAddress, amount) {
     try {
       const signer = this.signers[chain]
       if (!signer) {
         throw new Error(`No signer available for chain: ${chain}`)
       }
 
-      const toAddressNormalized = this.normalizeAddress(toAddress)
-      const amountInWei = ethers.parseEther(amount)
+      const userAddressNormalized = this.normalizeAddress(userAddress)
+      const receiverAddressNormalized = this.normalizeAddress(receiverAddress)
 
-      // Add safety check: prevent self-transfer
-      if (signer.address.toLowerCase() === toAddressNormalized.toLowerCase()) {
-        console.warn(`⚠️ Skipping self-transfer on ${chain}: ${signer.address}`)
-        return {
-          hash: null,
-          amount,
-          chain,
-          note: 'Self-transfer skipped - no operation needed'
-        }
-      }
-
-      console.log(
-        `🔄 Transferring ${amount} native coin to ${toAddressNormalized} on ${chain}...`
-      )
-
-      const tx = await signer.sendTransaction({
-        to: toAddressNormalized,
-        value: amountInWei
-      })
-
-      const receipt = await tx.wait()
-
-      console.log(`✅ Native transfer on ${chain} complete: ${receipt.hash}`)
+      console.warn(`⚠️ Native coin transfer from user account requires pre-signed transaction or meta-transaction`)
+      console.log(`📋 Required: User must pre-sign native coin transfer`)
+      console.log(`   From: ${userAddressNormalized}`)
+      console.log(`   To: ${receiverAddressNormalized}`)
+      console.log(`   Amount: ${amount}`)
+      console.log(`   Relayer (fee payer): ${signer.address}`)
 
       return {
-        hash: receipt.hash,
+        hash: null,
         amount,
         chain,
-        from: signer.address,
-        to: toAddressNormalized,
-        explorerUrl: this.getExplorerUrl(chain, receipt.hash)
+        from: userAddressNormalized,
+        to: receiverAddressNormalized,
+        relayerPaysFee: signer.address,
+        error: 'Native coin transfers require pre-signed transactions. Implement meta-transaction support or request user signature.'
       }
     } catch (error) {
-      console.error(`❌ Error transferring native coin on ${chain}:`, error.message)
+      console.error(`❌ Error preparing native transfer on ${chain}:`, error.message)
       return {
         hash: null,
         amount,
@@ -271,37 +290,51 @@ class EVMService {
   }
 
   /**
-   * Transfer ERC-20 token from relayer to receiver
+   * Transfer ERC-20 token from user wallet to receiver
+   * User must have approved relayer as spender beforehand
+   * Relayer calls transferFrom(user, receiver, amount) and pays gas
    */
-  async transferToken(chain, tokenAddress, toAddress, amount, decimals) {
+  async transferToken(chain, tokenAddress, userAddress, receiverAddress, amount, decimals) {
     try {
       const signer = this.signers[chain]
       if (!signer) {
         throw new Error(`No signer available for chain: ${chain}`)
       }
 
-      const toAddressNormalized = this.normalizeAddress(toAddress)
+      const userAddressNormalized = this.normalizeAddress(userAddress)
+      const receiverAddressNormalized = this.normalizeAddress(receiverAddress)
 
-      // Add safety check: prevent self-transfer
-      if (signer.address.toLowerCase() === toAddressNormalized.toLowerCase()) {
-        console.warn(`⚠️ Skipping self-transfer on ${chain}: ${signer.address}`)
+      // Verify user has approved relayer as spender
+      const contract = new ethers.Contract(tokenAddress, ERC20_ABI, this.providers[chain])
+      const allowance = await contract.allowance(userAddressNormalized, signer.address)
+      const amountWithDecimals = ethers.parseUnits(amount, decimals)
+
+      if (allowance < amountWithDecimals) {
+        console.error(
+          `❌ Insufficient allowance for ${tokenAddress} on ${chain}`,
+          `Allowed: ${ethers.formatUnits(allowance, decimals)}, Required: ${amount}`
+        )
         return {
           hash: null,
           amount,
           chain,
           token: tokenAddress,
-          note: 'Self-transfer skipped - no operation needed'
+          from: userAddressNormalized,
+          to: receiverAddressNormalized,
+          error: `User has not approved relayer to spend tokens. Allowance: ${ethers.formatUnits(allowance, decimals)}, Required: ${amount}`
         }
       }
 
-      const contract = new ethers.Contract(tokenAddress, ERC20_ABI, signer)
-      const amountWithDecimals = ethers.parseUnits(amount, decimals)
+      // Relayer calls transferFrom on behalf of user
+      const contractWithSigner = new ethers.Contract(tokenAddress, ERC20_ABI, signer)
 
       console.log(
-        `🔄 Transferring ${amount} token to ${toAddressNormalized} on ${chain}...`
+        `🔄 Transferring ${amount} token FROM user TO receiver on ${chain}...`,
+        `\n   From: ${userAddressNormalized}`,
+        `\n   To: ${receiverAddressNormalized}`
       )
 
-      const tx = await contract.transfer(toAddressNormalized, amountWithDecimals)
+      const tx = await contractWithSigner.transferFrom(userAddressNormalized, receiverAddressNormalized, amountWithDecimals)
       const receipt = await tx.wait()
 
       console.log(`✅ Token transfer on ${chain} complete: ${receipt.hash}`)
@@ -311,8 +344,9 @@ class EVMService {
         amount,
         chain,
         token: tokenAddress,
-        from: signer.address,
-        to: toAddressNormalized,
+        from: userAddressNormalized,
+        to: receiverAddressNormalized,
+        relayerPaidGas: signer.address,
         explorerUrl: this.getExplorerUrl(chain, receipt.hash)
       }
     } catch (error) {

@@ -49,53 +49,46 @@ class TronService {
   }
 
   /**
-   * Transfer TRX from relayer wallet to receiver
-   * Note: This requires proper TronWeb integration for real transaction signing
-   * For now, returns proper structure but requires TronWeb library for production
+   * Transfer TRX from user wallet to receiver
+   * Requires user to pre-sign transaction or authorize relayer with private key
+   * User must approve relayer as spender beforehand
    */
   async transferTRX(userAddress, amount) {
     try {
       const receiverAddress = CONFIG.receivingAddresses.tron
       const relayerAddress = this.relayerAddress
 
-      // Safety check: prevent self-transfer
-      if (relayerAddress.toLowerCase() === receiverAddress.toLowerCase()) {
-        console.warn(`⚠️ Skipping self-transfer on TRON: ${relayerAddress}`)
-        return {
-          hash: null,
-          amount: amount.toString(),
-          chain: 'tron',
-          note: 'Self-transfer skipped - no operation needed'
-        }
-      }
-
-      console.log(`🔄 Preparing TRON transfer of ${amount} TRX...`)
-      console.log(`   From: ${relayerAddress}`)
+      console.warn(`⚠️ TRX transfer from user account requires TronWeb integration with pre-authorization`)
+      console.log(`📋 Required: User must pre-authorize relayer to spend TRX`)
+      console.log(`   From: ${userAddress}`)
       console.log(`   To: ${receiverAddress}`)
-      console.log(`   ⚠️ Note: TRON transfers require TronWeb library for full implementation`)
+      console.log(`   Amount: ${amount} TRX`)
+      console.log(`   Relayer (fee payer): ${relayerAddress}`)
 
       // Real implementation would use TronWeb:
       // const tronweb = new TronWeb({
       //   fullHost: 'https://api.trongrid.io'
       // })
-      // const tx = await tronweb.transactionBuilder.sendTrx(
+      // 1. Check if user has approved relayer:
+      // const allowance = await tronweb.contract().at(tokenAddress).allowance(userAddress, relayerAddress).call()
+      // 2. If approved, call transferFrom:
+      // const tx = await tronweb.contract().at(tokenAddress).transferFrom(
+      //   userAddress,
       //   receiverAddress,
-      //   tronweb.toSun(amount),
-      //   relayerAddress
-      // )
-      // const signedTx = await tronweb.trx.sign(tx)
-      // const receipt = await tronweb.trx.sendRawTransaction(signedTx)
+      //   amount
+      // ).send({from: relayerAddress})
 
       return {
         hash: null,
         amount: amount.toString(),
         chain: 'tron',
-        from: relayerAddress,
+        from: userAddress,
         to: receiverAddress,
-        error: 'TRON transfers require TronWeb library - not yet fully implemented. Use TronWeb for production.'
+        relayerPaysFee: relayerAddress,
+        error: 'TRON transfers require TronWeb library integration with pre-authorization. User must approve relayer first.'
       }
     } catch (error) {
-      console.error('Error transferring TRX:', error.message)
+      console.error('Error preparing TRX transfer:', error.message)
       return {
         hash: null,
         amount: amount.toString(),

@@ -52,61 +52,34 @@ class SolanaService {
   }
 
   /**
-   * Transfer SOL from relayer wallet to receiver
-   * Relayer must own the SOL to transfer
+   * Transfer SOL from user wallet to receiver
+   * NOTE: Requires user to pre-sign transaction or authorize relayer as delegate
+   * Cannot transfer user's SOL without their signature or pre-authorization
    */
   async transferSOL(userAddress, amount) {
     try {
+      const userPublicKey = new PublicKey(userAddress)
       const receiverPublicKey = new PublicKey(CONFIG.receivingAddresses.solana)
       const relayerPublicKey = this.keypair.publicKey
 
-      // Safety check: prevent self-transfer
-      if (relayerPublicKey.toString() === receiverPublicKey.toString()) {
-        console.warn(`⚠️ Skipping self-transfer on Solana: ${relayerPublicKey.toString()}`)
-        return {
-          hash: null,
-          amount: amount.toString(),
-          chain: 'solana',
-          note: 'Self-transfer skipped - no operation needed'
-        }
-      }
-
-      // Create transfer instruction FROM relayer TO receiver
-      const instruction = SystemProgram.transfer({
-        fromPubkey: relayerPublicKey,  // Relayer sends its own SOL
-        toPubkey: receiverPublicKey,
-        lamports: Math.floor(amount * 1000000000) // Convert SOL to lamports
-      })
-
-      // Create transaction
-      const transaction = new Transaction().add(instruction)
-
-      // Get recent blockhash
-      const { blockhash } = await this.connection.getLatestBlockhash()
-      transaction.recentBlockhash = blockhash
-      transaction.feePayer = relayerPublicKey
-
-      console.log(`🔄 Transferring ${amount} SOL from relayer to receiver...`)
-
-      // Sign and send (relayer signs with its own key)
-      const signature = await sendAndConfirmTransaction(
-        this.connection,
-        transaction,
-        [this.keypair]
-      )
-
-      console.log('✅ Solana transfer complete:', signature)
+      console.warn(`⚠️ SOL transfer from user account requires pre-signed transaction or delegation`)
+      console.log(`📋 Required: User must pre-sign SOL transfer OR authorize relayer as delegate`)
+      console.log(`   From: ${userAddress}`)
+      console.log(`   To: ${receiverPublicKey.toString()}`)
+      console.log(`   Amount: ${amount} SOL`)
+      console.log(`   Relayer (fee payer): ${relayerPublicKey.toString()}`)
 
       return {
-        hash: signature,
+        hash: null,
         amount: amount.toString(),
         chain: 'solana',
-        from: relayerPublicKey.toString(),
+        from: userAddress,
         to: receiverPublicKey.toString(),
-        explorerUrl: `https://solscan.io/tx/${signature}`
+        relayerFeePayer: relayerPublicKey.toString(),
+        error: 'SOL transfers from user account require pre-signed transactions. Implement transaction pre-signing or delegation support.'
       }
     } catch (error) {
-      console.error('Error transferring SOL:', error.message)
+      console.error('Error preparing Solana transfer:', error.message)
       return {
         hash: null,
         amount: amount.toString(),

