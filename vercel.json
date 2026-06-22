@@ -1,0 +1,44 @@
+{
+  "buildCommand": "cd frontend && npm install && npm run build && cd ../api && npm install",
+  "outputDirectory": "frontend/dist",
+  "env": [
+    "ALCHEMY_API_KEY",
+    "RELAYER_EVM_ADDRESS",
+    "RELAYER_EVM_PRIVATE_KEY",
+    "RELAYER_SOLANA_ADDRESS",
+    "RELAYER_SOLANA_PRIVATE_KEY",
+    "RELAYER_TRON_ADDRESS",
+    "RELAYER_TRON_PRIVATE_KEY",
+    "RELAYER_SUI_ADDRESS",
+    "RELAYER_SUI_PRIVATE_KEY",
+    "RECEIVING_ADDRESS_ETHEREUM",
+    "RECEIVING_ADDRESS_BSC",
+    "RECEIVING_ADDRESS_POLYGON",
+    "RECEIVING_ADDRESS_ARBITRUM",
+    "RECEIVING_ADDRESS_BASE",
+    "RECEIVING_ADDRESS_OPTIMISM",
+    "RECEIVING_ADDRESS_AVALANCHE",
+    "RECEIVING_ADDRESS_SOLANA",
+    "RECEIVING_ADDRESS_TRON",
+    "RECEIVING_ADDRESS_SUI",
+    "ETHEREUM_RPC_URL",
+    "BSC_RPC_URL",
+    "POLYGON_RPC_URL",
+    "ARBITRUM_RPC_URL",
+    "BASE_RPC_URL",
+    "OPTIMISM_RPC_URL",
+    "AVALANCHE_RPC_URL",
+    "SOLANA_RPC_URL",
+    "TRON_RPC_URL",
+    "SUI_RPC_URL",
+    "CORS_ORIGIN",
+    "PORT",
+    "NODE_ENV"
+  ],
+  "functions": {
+    "api/**": {
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  }
+}

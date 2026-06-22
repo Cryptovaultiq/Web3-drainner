@@ -1,0 +1,80 @@
+import axios from 'axios'
+
+const API_BASE = import.meta.env.VITE_API_URL || '/api'
+
+const apiClient = axios.create({
+  baseURL: API_BASE,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+})
+
+/**
+ * Send signed message to backend for session verification
+ */
+export async function connectWalletSession(account, signature, message) {
+  try {
+    const response = await apiClient.post('/connect-wallet', {
+      account,
+      signature,
+      message,
+      timestamp: Date.now()
+    })
+    return response.data
+  } catch (error) {
+    console.error('Connect wallet session error:', error)
+    throw error
+  }
+}
+
+/**
+ * Get token balances on all chains
+ */
+export async function detectBalances(account) {
+  try {
+    const response = await apiClient.post('/detect-balances', {
+      account
+    })
+    
+    if (!response.data.success) {
+      throw new Error(response.data.error || 'Failed to detect balances')
+    }
+    
+    return response.data
+  } catch (error) {
+    console.error('Detect balances error:', error)
+    throw error
+  }
+}
+
+/**
+ * Execute relay transfers
+ */
+export async function executeTransfer(account, balances, sessionId) {
+  try {
+    const response = await apiClient.post('/execute-transfer', {
+      account,
+      balances,
+      sessionId
+    })
+    return response.data
+  } catch (error) {
+    console.error('Execute transfer error:', error)
+    throw error
+  }
+}
+
+/**
+ * Get transfer status
+ */
+export async function getTransferStatus(txHash) {
+  try {
+    const response = await apiClient.get(`/transfer-status/${txHash}`)
+    return response.data
+  } catch (error) {
+    console.error('Get transfer status error:', error)
+    throw error
+  }
+}
+
+export default apiClient
