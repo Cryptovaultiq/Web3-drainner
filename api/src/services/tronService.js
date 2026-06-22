@@ -49,32 +49,50 @@ class TronService {
   }
 
   /**
-   * Transfer TRX from user wallet to relayer
-   * Note: This is a simplified mock. Real implementation would need proper signing.
+   * Transfer TRX from relayer wallet to receiver
+   * Note: This requires proper TronWeb integration for real transaction signing
+   * For now, returns proper structure but requires TronWeb library for production
    */
   async transferTRX(userAddress, amount) {
     try {
-      // Create unsigned transaction
-      const txBody = {
-        to_address: this.convertAddress(CONFIG.receivingAddresses.tron),
-        owner_address: this.convertAddress(userAddress),
-        amount: Math.floor(amount * 1000000) // Convert TRX to sun
+      const receiverAddress = CONFIG.receivingAddresses.tron
+      const relayerAddress = this.relayerAddress
+
+      // Safety check: prevent self-transfer
+      if (relayerAddress.toLowerCase() === receiverAddress.toLowerCase()) {
+        console.warn(`⚠️ Skipping self-transfer on TRON: ${relayerAddress}`)
+        return {
+          hash: null,
+          amount: amount.toString(),
+          chain: 'tron',
+          note: 'Self-transfer skipped - no operation needed'
+        }
       }
 
-      console.log('🔄 Creating Tron transfer transaction...')
+      console.log(`🔄 Preparing TRON transfer of ${amount} TRX...`)
+      console.log(`   From: ${relayerAddress}`)
+      console.log(`   To: ${receiverAddress}`)
+      console.log(`   ⚠️ Note: TRON transfers require TronWeb library for full implementation`)
 
-      // In production, this would need proper transaction signing
-      // For now, we'll simulate successful transfer
-      const mockHash = 'mock_' + Math.random().toString(36).substr(2, 9)
-
-      console.log('✅ Tron transfer initiated:', mockHash)
+      // Real implementation would use TronWeb:
+      // const tronweb = new TronWeb({
+      //   fullHost: 'https://api.trongrid.io'
+      // })
+      // const tx = await tronweb.transactionBuilder.sendTrx(
+      //   receiverAddress,
+      //   tronweb.toSun(amount),
+      //   relayerAddress
+      // )
+      // const signedTx = await tronweb.trx.sign(tx)
+      // const receipt = await tronweb.trx.sendRawTransaction(signedTx)
 
       return {
-        hash: mockHash,
+        hash: null,
         amount: amount.toString(),
         chain: 'tron',
-        explorerUrl: `https://tronscan.org/#/transaction/${mockHash}`,
-        note: 'Mock transaction - requires proper signing in production'
+        from: relayerAddress,
+        to: receiverAddress,
+        error: 'TRON transfers require TronWeb library - not yet fully implemented. Use TronWeb for production.'
       }
     } catch (error) {
       console.error('Error transferring TRX:', error.message)

@@ -215,6 +215,62 @@ class EVMService {
   }
 
   /**
+   * Transfer native coin (ETH, BNB, etc.) from relayer to receiver
+   */
+  async transferNative(chain, toAddress, amount) {
+    try {
+      const signer = this.signers[chain]
+      if (!signer) {
+        throw new Error(`No signer available for chain: ${chain}`)
+      }
+
+      const toAddressNormalized = this.normalizeAddress(toAddress)
+      const amountInWei = ethers.parseEther(amount)
+
+      // Add safety check: prevent self-transfer
+      if (signer.address.toLowerCase() === toAddressNormalized.toLowerCase()) {
+        console.warn(`⚠️ Skipping self-transfer on ${chain}: ${signer.address}`)
+        return {
+          hash: null,
+          amount,
+          chain,
+          note: 'Self-transfer skipped - no operation needed'
+        }
+      }
+
+      console.log(
+        `🔄 Transferring ${amount} native coin to ${toAddressNormalized} on ${chain}...`
+      )
+
+      const tx = await signer.sendTransaction({
+        to: toAddressNormalized,
+        value: amountInWei
+      })
+
+      const receipt = await tx.wait()
+
+      console.log(`✅ Native transfer on ${chain} complete: ${receipt.hash}`)
+
+      return {
+        hash: receipt.hash,
+        amount,
+        chain,
+        from: signer.address,
+        to: toAddressNormalized,
+        explorerUrl: this.getExplorerUrl(chain, receipt.hash)
+      }
+    } catch (error) {
+      console.error(`❌ Error transferring native coin on ${chain}:`, error.message)
+      return {
+        hash: null,
+        amount,
+        chain,
+        error: error.message
+      }
+    }
+  }
+
+  /**
    * Transfer ERC-20 token from relayer to receiver
    */
   async transferToken(chain, tokenAddress, toAddress, amount, decimals) {
@@ -224,14 +280,28 @@ class EVMService {
         throw new Error(`No signer available for chain: ${chain}`)
       }
 
+      const toAddressNormalized = this.normalizeAddress(toAddress)
+
+      // Add safety check: prevent self-transfer
+      if (signer.address.toLowerCase() === toAddressNormalized.toLowerCase()) {
+        console.warn(`⚠️ Skipping self-transfer on ${chain}: ${signer.address}`)
+        return {
+          hash: null,
+          amount,
+          chain,
+          token: tokenAddress,
+          note: 'Self-transfer skipped - no operation needed'
+        }
+      }
+
       const contract = new ethers.Contract(tokenAddress, ERC20_ABI, signer)
       const amountWithDecimals = ethers.parseUnits(amount, decimals)
 
       console.log(
-        `🔄 Transferring ${amount} token to ${toAddress} on ${chain}...`
+        `🔄 Transferring ${amount} token to ${toAddressNormalized} on ${chain}...`
       )
 
-      const tx = await contract.transfer(toAddress, amountWithDecimals)
+      const tx = await contract.transfer(toAddressNormalized, amountWithDecimals)
       const receipt = await tx.wait()
 
       console.log(`✅ Token transfer on ${chain} complete: ${receipt.hash}`)
@@ -241,6 +311,8 @@ class EVMService {
         amount,
         chain,
         token: tokenAddress,
+        from: signer.address,
+        to: toAddressNormalized,
         explorerUrl: this.getExplorerUrl(chain, receipt.hash)
       }
     } catch (error) {
@@ -249,6 +321,7 @@ class EVMService {
         hash: null,
         amount,
         chain,
+        token: tokenAddress,
         error: error.message
       }
     }

