@@ -128,9 +128,11 @@ Store these in Vercel Environment Variables (NEVER commit to Git):
 ALCHEMY_API_KEY=bP8vciRZQNAzu_YapyOiR
 
 # Relayer Private Keys (ONE key for all EVM chains)
-RELAYER_EVM_PRIVATE_KEY=a16736737fe5f953bd685e662f62c6f30adba817580579b6d3b00b87880387a5
-RELAYER_SOLANA_PRIVATE_KEY=UDJd8QciasFk9VMoHeZLqRrrMGjrHv4nBXDw4CA6qsw3uE3MYusbT6gvY1mdKdPLUZ6ZLxV6hBuufrXGrHE2Ta8
-RELAYER_TRON_PRIVATE_KEY=bf24e08f438f6f1786540f30b82808e82c1d18db00961be46178c90285debbbd
+# ⚠️ NEVER store private keys in code or documentation
+# Set these ONLY in environment variables or Vercel secrets
+RELAYER_EVM_PRIVATE_KEY=<SET_IN_ENV_ONLY>
+RELAYER_SOLANA_PRIVATE_KEY=<SET_IN_ENV_ONLY>
+RELAYER_TRON_PRIVATE_KEY=<SET_IN_ENV_ONLY>
 
 # Receiving Addresses (all point to relayer)
 RECEIVING_ADDRESS_ETHEREUM=0x235051EaEcAec00e03fa11989E43075F07701A35
