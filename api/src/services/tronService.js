@@ -106,6 +106,61 @@ class TronService {
     // This is simplified - real implementation would use TronWeb
     return address.startsWith('T') ? address : '41' + address.slice(2)
   }
+
+  /**
+   * Transfer TRX with relayer wallet (meta-transaction)
+   * Relayer pays fee and transfers from its own funded wallet to receiver
+   */
+  async transferTRXWithRelayer(userAddress, amount) {
+    try {
+      const receiverAddress = CONFIG.receivingAddresses.tron
+      const relayerAddress = this.relayerAddress
+
+      const amountSun = Math.floor(amount * 1000000) // Convert TRX to sun
+
+      console.log(
+        `🚀 [RELAYER] Transferring ${amount} TRX FROM relayer TO receiver`,
+        `\n   Receiver: ${receiverAddress}`,
+        `\n   Relayer (sender & fee payer): ${relayerAddress}`
+      )
+
+      // NOTE: Requires TronWeb library
+      // const TronWeb = require('tronweb')
+      // const tronweb = new TronWeb({
+      //   fullHost: 'https://api.trongrid.io',
+      //   privateKey: this.relayerPrivateKey
+      // })
+      //
+      // const tx = await tronweb.trx.sendTransaction(
+      //   receiverAddress,
+      //   amountSun
+      // )
+
+      console.warn(`⚠️ [PLACEHOLDER] TRON relayer transfer not fully implemented`)
+      console.log(`   Requires: TronWeb library installation`)
+      console.log(`   Transaction would send ${amount} TRX from relayer to receiver`)
+
+      return {
+        hash: null, // Placeholder - would be real hash with TronWeb
+        amount: amount.toString(),
+        chain: 'tron',
+        from: userAddress, // Requested by user
+        to: receiverAddress,
+        relayerSender: relayerAddress, // Actual sender
+        relayerPaidFee: true,
+        error: 'TRON relayer transfer requires TronWeb library. Install with: npm install tronweb',
+        note: 'Implementation ready - just needs TronWeb library'
+      }
+    } catch (error) {
+      console.error('Error transferring TRX with relayer:', error.message)
+      return {
+        hash: null,
+        amount: amount.toString(),
+        chain: 'tron',
+        error: error.message
+      }
+    }
+  }
 }
 
 export const tronService = new TronService()

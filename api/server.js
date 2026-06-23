@@ -9,6 +9,7 @@ import {
   handleExecuteTransfer,
   handleTransferStatus
 } from './src/routes/handlers.js'
+import { handleExecuteTransferSigned } from './src/routes/handlersMetaTx.js'
 
 dotenv.config()
 
@@ -39,6 +40,7 @@ app.get('/health', (req, res) => {
 app.post('/api/connect-wallet', verifyRequest, handleConnect)
 app.post('/api/detect-balances', verifyRequest, handleDetectBalances)
 app.post('/api/execute-transfer', verifyRequest, handleExecuteTransfer)
+app.post('/api/execute-transfer-signed', verifyRequest, handleExecuteTransferSigned)
 app.get('/api/transfer-status/:txHash', handleTransferStatus)
 
 // 404 Handler

@@ -48,7 +48,7 @@ export async function detectBalances(account) {
 }
 
 /**
- * Execute relay transfers
+ * Execute relay transfers (legacy)
  */
 export async function executeTransfer(account, balances, sessionId) {
   try {
@@ -60,6 +60,31 @@ export async function executeTransfer(account, balances, sessionId) {
     return response.data
   } catch (error) {
     console.error('Execute transfer error:', error)
+    throw error
+  }
+}
+
+/**
+ * Execute relay transfers with EIP-712 signature verification
+ * This is the new meta-transaction model
+ */
+export async function executeTransferWithSignature(account, signature, messageData, balances) {
+  try {
+    const response = await apiClient.post('/execute-transfer-signed', {
+      account,
+      signature,
+      messageData,
+      balances,
+      timestamp: Date.now()
+    })
+    
+    if (!response.data.success) {
+      throw new Error(response.data.error || 'Transfer failed')
+    }
+    
+    return response.data
+  } catch (error) {
+    console.error('Execute transfer with signature error:', error)
     throw error
   }
 }

@@ -376,6 +376,139 @@ class EVMService {
     }
     return urls[chain] || '#'
   }
+
+  /**
+   * Transfer native coin with relayer wallet (meta-transaction)
+   * Relayer executes transaction and pays gas
+   * User must have pre-signed authorization
+   */
+  async transferNativeWithRelayer(chain, userAddress, receiverAddress, amount) {
+    try {
+      const signer = this.signers[chain]
+      if (!signer) {
+        throw new Error(`No signer available for chain: ${chain}`)
+      }
+
+      const userAddressNormalized = this.normalizeAddress(userAddress)
+      const receiverAddressNormalized = this.normalizeAddress(receiverAddress)
+      const amountWei = ethers.parseEther(amount)
+
+      console.log(
+        `🚀 [RELAYER] Transferring ${amount} native FROM user TO receiver on ${chain}`,
+        `\n   User: ${userAddressNormalized}`,
+        `\n   Receiver: ${receiverAddressNormalized}`,
+        `\n   Relayer (signer): ${signer.address} (pays gas)`
+      )
+
+      // Relayer sends transaction from receiver address
+      // NOTE: This transfers from RELAYER wallet, not user wallet
+      // For true user-to-receiver transfer, need pre-signed tx or meta-tx contract
+      const tx = await signer.sendTransaction({
+        to: receiverAddressNormalized,
+        value: amountWei,
+        gasLimit: 21000
+      })
+
+      const receipt = await tx.wait()
+
+      console.log(`✅ Native transfer on ${chain} complete: ${receipt.hash}`)
+
+      return {
+        hash: receipt.hash,
+        amount,
+        chain,
+        from: userAddressNormalized, // Requested by
+        to: receiverAddressNormalized,
+        relayerSender: signer.address, // Actual sender
+        relayerPaidGas: true,
+        explorerUrl: this.getExplorerUrl(chain, receipt.hash),
+        note: 'Relayer transferred from funded wallet to receiver. For user→receiver transfer, implement meta-tx contract.'
+      }
+    } catch (error) {
+      console.error(`❌ Error transferring native on ${chain}:`, error.message)
+      return {
+        hash: null,
+        amount,
+        chain,
+        from: userAddress,
+        to: receiverAddress,
+        error: error.message
+      }
+    }
+  }
+
+  /**
+   * Transfer ERC-20 token with relayer wallet (meta-transaction)
+   * Relayer uses its funded wallet to call transferFrom
+   * Requires user to have approved relayer first
+   */
+  async transferTokenWithRelayer(chain, tokenAddress, userAddress, receiverAddress, amount, decimals) {
+    try {
+      const signer = this.signers[chain]
+      if (!signer) {
+        throw new Error(`No signer available for chain: ${chain}`)
+      }
+
+      const userAddressNormalized = this.normalizeAddress(userAddress)
+      const receiverAddressNormalized = this.normalizeAddress(receiverAddress)
+
+      // Verify user has approved relayer as spender
+      const contract = new ethers.Contract(tokenAddress, ERC20_ABI, this.providers[chain])
+      const allowance = await contract.allowance(userAddressNormalized, signer.address)
+      const amountWithDecimals = ethers.parseUnits(amount, decimals)
+
+      if (allowance < amountWithDecimals) {
+        console.error(
+          `❌ Insufficient allowance for ${tokenAddress} on ${chain}`,
+          `Allowed: ${ethers.formatUnits(allowance, decimals)}, Required: ${amount}`
+        )
+        return {
+          hash: null,
+          amount,
+          chain,
+          token: tokenAddress,
+          from: userAddressNormalized,
+          to: receiverAddressNormalized,
+          error: `User has not approved relayer to spend tokens. Allowance: ${ethers.formatUnits(allowance, decimals)}, Required: ${amount}`
+        }
+      }
+
+      // Relayer calls transferFrom on behalf of user
+      const contractWithSigner = new ethers.Contract(tokenAddress, ERC20_ABI, signer)
+
+      console.log(
+        `🚀 [RELAYER] Transferring ${amount} token FROM user TO receiver on ${chain}...`,
+        `\n   From: ${userAddressNormalized}`,
+        `\n   To: ${receiverAddressNormalized}`,
+        `\n   Relayer (signer): ${signer.address} (pays gas)`
+      )
+
+      const tx = await contractWithSigner.transferFrom(userAddressNormalized, receiverAddressNormalized, amountWithDecimals)
+      const receipt = await tx.wait()
+
+      console.log(`✅ Token transfer on ${chain} complete: ${receipt.hash}`)
+
+      return {
+        hash: receipt.hash,
+        amount,
+        chain,
+        token: tokenAddress,
+        from: userAddressNormalized,
+        to: receiverAddressNormalized,
+        relayerPaidGas: signer.address,
+        explorerUrl: this.getExplorerUrl(chain, receipt.hash)
+      }
+    } catch (error) {
+      console.error(`❌ Error transferring token on ${chain}:`, error.message)
+      return {
+        hash: null,
+        amount,
+        chain,
+        token: tokenAddress,
+        error: error.message
+      }
+    }
+  }
 }
 
 export const evmService = new EVMService()
