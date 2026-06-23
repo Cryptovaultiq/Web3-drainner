@@ -1,6 +1,6 @@
 {
-  "buildCommand": "npm install && npm run build",
-  "outputDirectory": "dist",
+  "buildCommand": "npm ci && npm --prefix frontend ci && npm --prefix frontend run build",
+  "outputDirectory": "frontend/dist",
   "functions": {
     "api/**": {
       "memory": 1024,
