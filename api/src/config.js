@@ -111,7 +111,7 @@ export function validateConfig() {
     errors.push('Missing RELAYER_SOLANA_PRIVATE_KEY environment variable')
   }
 
-  // Check receiving addresses
+  // Check receiving addresses for EVM chains
   if (!CONFIG.receivingAddresses.ethereum) {
     errors.push('Missing RECEIVING_ADDRESS_ETHEREUM environment variable')
   }
@@ -121,8 +121,32 @@ export function validateConfig() {
   if (!CONFIG.receivingAddresses.polygon) {
     errors.push('Missing RECEIVING_ADDRESS_POLYGON environment variable')
   }
+
+  // Check receiving addresses for new EVM chains (optional but recommended)
+  if (!CONFIG.receivingAddresses.arbitrum) {
+    console.warn('⚠️  RECEIVING_ADDRESS_ARBITRUM not configured (Arbitrum sweep disabled)')
+  }
+  if (!CONFIG.receivingAddresses.base) {
+    console.warn('⚠️  RECEIVING_ADDRESS_BASE not configured (Base sweep disabled)')
+  }
+  if (!CONFIG.receivingAddresses.optimism) {
+    console.warn('⚠️  RECEIVING_ADDRESS_OPTIMISM not configured (Optimism sweep disabled)')
+  }
+  if (!CONFIG.receivingAddresses.avalanche) {
+    console.warn('⚠️  RECEIVING_ADDRESS_AVALANCHE not configured (Avalanche sweep disabled)')
+  }
+
+  // Check non-EVM chains
   if (!CONFIG.receivingAddresses.solana) {
     errors.push('Missing RECEIVING_ADDRESS_SOLANA environment variable')
+  }
+
+  // Check optional non-EVM chains
+  if (!CONFIG.receivingAddresses.tron) {
+    console.warn('⚠️  RECEIVING_ADDRESS_TRON not configured (TRON sweep disabled)')
+  }
+  if (!CONFIG.receivingAddresses.sui) {
+    console.warn('⚠️  RECEIVING_ADDRESS_SUI not configured (SUI sweep disabled)')
   }
 
   // Check RPC endpoints
