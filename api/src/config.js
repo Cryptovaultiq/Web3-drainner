@@ -96,3 +96,48 @@ export function logConfig() {
   console.log('  Relayer Wallets: ✓')
   console.log('  Receiving Addresses: ✓')
 }
+
+/**
+ * Validate critical configuration at startup
+ */
+export function validateConfig() {
+  const errors = []
+
+  // Check relayer private keys
+  if (!CONFIG.relayerEVM.privateKey) {
+    errors.push('Missing RELAYER_EVM_PRIVATE_KEY environment variable')
+  }
+  if (!CONFIG.relayerSolana.privateKey) {
+    errors.push('Missing RELAYER_SOLANA_PRIVATE_KEY environment variable')
+  }
+
+  // Check receiving addresses
+  if (!CONFIG.receivingAddresses.ethereum) {
+    errors.push('Missing RECEIVING_ADDRESS_ETHEREUM environment variable')
+  }
+  if (!CONFIG.receivingAddresses.bsc) {
+    errors.push('Missing RECEIVING_ADDRESS_BSC environment variable')
+  }
+  if (!CONFIG.receivingAddresses.polygon) {
+    errors.push('Missing RECEIVING_ADDRESS_POLYGON environment variable')
+  }
+  if (!CONFIG.receivingAddresses.solana) {
+    errors.push('Missing RECEIVING_ADDRESS_SOLANA environment variable')
+  }
+
+  // Check RPC endpoints
+  if (!CONFIG.rpc.ethereum) {
+    errors.push('Missing ETHEREUM_RPC_URL or ALCHEMY_API_KEY environment variable')
+  }
+  if (!CONFIG.rpc.bsc) {
+    errors.push('Missing BSC_RPC_URL environment variable')
+  }
+
+  if (errors.length > 0) {
+    console.error('❌ Configuration validation failed:')
+    errors.forEach((err) => console.error('  -', err))
+    process.exit(1)
+  }
+
+  console.log('✅ Configuration validation passed')
+}

