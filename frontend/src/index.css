@@ -33,13 +33,47 @@ body {
   display: flex;
   align-items: center;
   overflow: visible;
+  min-width: 240px;
+  flex-shrink: 0;
+  width: auto !important;
 }
 
 .nav-logo img {
-  width: auto;
-  max-width: 220px;
-  height: auto;
-  display: block;
+  width: 203px !important;
+  max-width: none !important;
+  min-width: 203px !important;
+  height: 32px !important;
+  display: block !important;
+}
+
+.logo-img {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: #ffffff;
+  overflow: visible;
+}
+
+.logo-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.logo-text {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .nav-links {
