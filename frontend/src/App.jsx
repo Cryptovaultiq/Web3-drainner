@@ -158,48 +158,4 @@ function App() {
 }
 
 export default App
-              </button>
-            </div>
-          </div>
-        ) : null}
 
-        {/* Connect Button */}
-        {!isConnected ? (
-          <ConnectButton
-            onClick={handleConnect}
-            isLoading={isLoading}
-            error={error}
-          />
-        ) : null}
-
-        {/* Balances Display */}
-        {isConnected && (
-          <BalancesDisplay balances={balances} />
-        )}
-
-        {/* Transfer Status */}
-        {transferStatus && (
-          <TransferModal status={transferStatus} />
-        )}
-
-        {/* Summary Modal */}
-        {showSummary && (
-          <SummaryModal
-            status={transferStatus}
-            onClose={() => setShowSummary(false)}
-          />
-        )}
-
-        {/* Error Display */}
-        {error && (
-          <div className="bg-red-900 border border-red-700 rounded-lg p-4 mb-8">
-            <p className="text-red-200 font-semibold">Error</p>
-            <p className="text-red-300 text-sm mt-2">{error}</p>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-export default App
