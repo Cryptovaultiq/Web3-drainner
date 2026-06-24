@@ -18,6 +18,13 @@ export default defineConfig({
   build: {
     commonjsOptions: {
       include: [/node_modules/]
+    },
+    rollupOptions: {
+      output: {
+        entryFileNames: 'assets/[name].js',
+        chunkFileNames: 'assets/[name].js',
+        assetFileNames: 'assets/[name][extname]'
+      }
     }
   },
   server: {
