@@ -1,4 +1,3 @@
-import { EthereumProvider } from '@walletconnect/ethereum-provider'
 import { openWalletWithDeepLink, detectInstalledWallets, isMobileDevice } from './walletDeepLink'
 
 const WALLETCONNECT_PROJECT_ID = '81ec0eb195ddbee9c5596804e33ff584'
@@ -7,18 +6,37 @@ let wcProvider = null
 let connectionAbortController = null
 let currentUri = null
 
+async function loadEthereumProvider() {
+  // Try local bundler-resolved import first
+  try {
+    const mod = await import('@walletconnect/ethereum-provider')
+    return mod?.EthereumProvider || mod?.default || mod
+  } catch (err) {
+    console.warn('Local import of @walletconnect/ethereum-provider failed, falling back to CDN:', err)
+  }
+
+  // Fallback to CDN ESM build
+  try {
+    const mod = await import('https://unpkg.com/@walletconnect/ethereum-provider@2.10.0?module')
+    return mod?.EthereumProvider || mod?.default || mod
+  } catch (err) {
+    console.error('CDN fallback for WalletConnect failed:', err)
+    throw err
+  }
+}
+
 /**
  * Initialize WalletConnect with fallback support
  */
 export async function initWalletConnect() {
   try {
-    if (wcProvider) {
-      return wcProvider
-    }
+    if (wcProvider) return wcProvider
 
     console.log('🚀 Initializing WalletConnect...')
 
-    wcProvider = await EthereumProvider.init({
+    const ProviderClass = await loadEthereumProvider()
+
+    wcProvider = await ProviderClass.init({
       projectId: WALLETCONNECT_PROJECT_ID,
       chains: [1, 56, 137, 42161, 8453, 10, 43114], // Ethereum, BSC, Polygon, Arbitrum, Base, Optimism, Avalanche
       showQrModal: true,
