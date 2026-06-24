@@ -21,7 +21,7 @@ function ConnectButton({ onClick, isLoading, error }) {
           </>
         ) : (
           <>
-            <span>👛</span>
+            <i className="fas fa-link"></i>
             Connect Wallet
           </>
         )}
