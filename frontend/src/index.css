@@ -29,9 +29,17 @@ body {
   border: 1px solid #3f4141;
 }
 
+.nav-logo {
+  display: flex;
+  align-items: center;
+  overflow: visible;
+}
+
 .nav-logo img {
-  width: 180px;
+  width: auto;
+  max-width: 220px;
   height: auto;
+  display: block;
 }
 
 .nav-links {
