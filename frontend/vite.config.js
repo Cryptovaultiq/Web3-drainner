@@ -8,10 +8,16 @@ export default defineConfig({
       supported: {
         bigint: true
       }
-    }
+    },
+    include: ['@walletconnect/ethereum-provider']
   },
   ssr: {
     noExternal: ['@walletconnect/ethereum-provider']
+  },
+  build: {
+    commonjsOptions: {
+      include: [/node_modules/]
+    }
   },
   server: {
     port: 3000,
