@@ -9,13 +9,5 @@
     "build:frontend": "cd frontend && npm run build",
     "build": "npm run build:frontend",
     "preview": "cd frontend && npm run preview"
-  },
-  "workspaces": [
-    "frontend",
-    "api"
-  ],
-  "dependencies": {
-    "@mysten/sui.js": "^0.54.1",
-    "tronweb": "^6.3.0"
   }
 }
