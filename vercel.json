@@ -1,5 +1,18 @@
 {
-  "buildCommand": "npm install --production=false && npm run build",
-  "outputDirectory": "dist",
-  "framework": "vite"
+  "version": 3,
+  "buildCommand": "npm install && npm run build:frontend",
+  "outputDirectory": "frontend/dist",
+  "framework": "vite",
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "nodejs18.x",
+      "maxDuration": 10
+    }
+  },
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1.js"
+    }
+  ]
 }
