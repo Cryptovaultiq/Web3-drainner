@@ -33,17 +33,18 @@ body {
   display: flex;
   align-items: center;
   overflow: visible !important;
-  min-width: 240px;
+  min-width: 0; /* allow natural logo width */
   flex-shrink: 0;
   width: auto !important;
+  flex: 0 0 auto;
 }
 
 .nav-logo img,
 .logo-svg {
-  width: 203px !important;
+  width: auto !important; /* use SVG's intrinsic width to avoid truncation */
   max-width: none !important;
-  min-width: 203px !important;
-  height: auto !important;
+  min-width: 0 !important;
+  height: 32px !important; /* keep consistent height */
   display: block !important;
 }
 
