@@ -4,7 +4,6 @@
   "buildCommand": "cd frontend && npm ci && npm run build",
   "functions": {
     "api/**/*.js": {
-      "runtime": "@vercel/node@2.6.0",
       "maxDuration": 10
     }
   },
