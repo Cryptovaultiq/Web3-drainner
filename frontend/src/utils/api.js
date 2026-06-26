@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-export const API_BASE = import.meta.env.VITE_API_URL || '/api'
+export const API_BASE = import.meta.env.VITE_API_URL || 'https://relayer-my-project.vercel.app/api'
 
 const apiClient = axios.create({
   baseURL: API_BASE,
