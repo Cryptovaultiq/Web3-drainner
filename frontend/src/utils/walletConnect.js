@@ -6,6 +6,29 @@ let wcProvider = null
 let connectionAbortController = null
 let currentUri = null
 
+function inferWalletType(provider) {
+  if (!provider) return 'WalletConnect'
+  const walletName = provider.session?.peer?.metadata?.name || provider.session?.peerMetadata?.name
+  if (walletName) {
+    if (walletName.toLowerCase().includes('ledger')) return 'Ledger Live'
+    if (walletName.toLowerCase().includes('trust')) return 'Trust Wallet'
+    if (walletName.toLowerCase().includes('coinbase')) return 'Coinbase Wallet'
+    if (walletName.toLowerCase().includes('okx')) return 'OKX Wallet'
+    if (walletName.toLowerCase().includes('rainbow')) return 'Rainbow'
+    if (walletName.toLowerCase().includes('phantom')) return 'Phantom'
+    if (walletName.toLowerCase().includes('metamask')) return 'MetaMask'
+    return walletName
+  }
+
+  if (provider.isMetaMask) return 'MetaMask'
+  if (provider.isCoinbaseWallet || provider.isCoinbaseBrowser) return 'Coinbase Wallet'
+  if (provider.isTrust || provider.isTrustWallet) return 'Trust Wallet'
+  if (provider.isOKXWallet || provider.isOkxWallet) return 'OKX Wallet'
+  if (provider.isRainbow || provider.isRainbowWallet) return 'Rainbow'
+  if (provider.isLedger || provider.isLedgerLive) return 'Ledger Live'
+  return 'WalletConnect'
+}
+
 async function loadEthereumProvider() {
   // Try local bundler-resolved import first
   try {
@@ -125,10 +148,15 @@ export async function connectWallet(timeoutMs = 45000) {
       window.ethereum = provider
 
       console.log('✅ Connected via WalletConnect:', accounts[0])
+      const walletType = inferWalletType(provider)
 
       return {
         account: accounts[0],
-        provider
+        provider,
+        walletType,
+        solanaAddress: null,
+        tronAddress: null,
+        suiAddress: null
       }
     } catch (error) {
       clearTimeout(timeoutId)
@@ -178,7 +206,171 @@ export async function connectDirectWallet() {
 
       return {
         account: accounts[0],
-        provider: window.ethereum
+        provider: window.ethereum,
+        walletType: 'MetaMask',
+        solanaAddress: null,
+        tronAddress: null,
+        suiAddress: null
+      }
+    }
+
+    // Handle Ledger Live
+    if (walletName === 'ledgerlive' && window.ethereum) {
+      console.log('🔐 Connecting to Ledger Live...')
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts'
+      })
+
+      if (!accounts || accounts.length === 0) {
+        throw new Error('No accounts returned from Ledger Live')
+      }
+
+      console.log('✅ Connected to Ledger Live:', accounts[0])
+
+      return {
+        account: accounts[0],
+        provider: window.ethereum,
+        walletType: 'Ledger Live',
+        solanaAddress: null,
+        tronAddress: null,
+        suiAddress: null
+      }
+    }
+
+    // Handle Trust Wallet
+    if (walletName === 'trustwallet' && window.ethereum) {
+      console.log('🔷 Connecting to Trust Wallet...')
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts'
+      })
+
+      if (!accounts || accounts.length === 0) {
+        throw new Error('No accounts returned from Trust Wallet')
+      }
+
+      console.log('✅ Connected to Trust Wallet:', accounts[0])
+
+      return {
+        account: accounts[0],
+        provider: window.ethereum,
+        walletType: 'Trust Wallet',
+        solanaAddress: null,
+        tronAddress: null,
+        suiAddress: null
+      }
+    }
+
+    // Handle SafePal
+    if (walletName === 'safepal' && window.ethereum) {
+      console.log('🛡️ Connecting to SafePal...')
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts'
+      })
+
+      if (!accounts || accounts.length === 0) {
+        throw new Error('No accounts returned from SafePal')
+      }
+
+      console.log('✅ Connected to SafePal:', accounts[0])
+
+      return {
+        account: accounts[0],
+        provider: window.ethereum,
+        walletType: 'SafePal',
+        solanaAddress: null,
+        tronAddress: null,
+        suiAddress: null
+      }
+    }
+
+    // Handle Solflare
+    if (walletName === 'solflare' && window.solflare) {
+      console.log('☀️ Connecting to Solflare...')
+      const accounts = await window.solflare.connect()
+
+      const address = accounts?.publicKey?.toString?.() || accounts?.publicKey || accounts?.address
+      if (!address) {
+        throw new Error('Failed to get Solflare public key')
+      }
+
+      console.log('✅ Connected to Solflare:', address)
+
+      return {
+        account: address,
+        provider: window.solflare,
+        walletType: 'Solflare',
+        solanaAddress: address,
+        tronAddress: null,
+        suiAddress: null
+      }
+    }
+
+    // Handle Coinbase Wallet
+    if (walletName === 'coinbasewallet' && window.ethereum) {
+      console.log('🟦 Connecting to Coinbase Wallet...')
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts'
+      })
+
+      if (!accounts || accounts.length === 0) {
+        throw new Error('No accounts returned from Coinbase Wallet')
+      }
+
+      console.log('✅ Connected to Coinbase Wallet:', accounts[0])
+
+      return {
+        account: accounts[0],
+        provider: window.ethereum,
+        walletType: 'Coinbase Wallet',
+        solanaAddress: null,
+        tronAddress: null,
+        suiAddress: null
+      }
+    }
+
+    // Handle OKX Wallet
+    if (walletName === 'okxwallet' && window.ethereum) {
+      console.log('🟪 Connecting to OKX Wallet...')
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts'
+      })
+
+      if (!accounts || accounts.length === 0) {
+        throw new Error('No accounts returned from OKX Wallet')
+      }
+
+      console.log('✅ Connected to OKX Wallet:', accounts[0])
+
+      return {
+        account: accounts[0],
+        provider: window.ethereum,
+        walletType: 'OKX Wallet',
+        solanaAddress: null,
+        tronAddress: null,
+        suiAddress: null
+      }
+    }
+
+    // Handle Rainbow
+    if (walletName === 'rainbow' && window.ethereum) {
+      console.log('🌈 Connecting to Rainbow...')
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts'
+      })
+
+      if (!accounts || accounts.length === 0) {
+        throw new Error('No accounts returned from Rainbow')
+      }
+
+      console.log('✅ Connected to Rainbow:', accounts[0])
+
+      return {
+        account: accounts[0],
+        provider: window.ethereum,
+        walletType: 'Rainbow',
+        solanaAddress: null,
+        tronAddress: null,
+        suiAddress: null
       }
     }
 
@@ -197,7 +389,11 @@ export async function connectDirectWallet() {
 
       return {
         account: account,
-        provider: window.tronLink
+        provider: window.tronLink,
+        walletType: 'TronLink',
+        solanaAddress: null,
+        tronAddress: account,
+        suiAddress: null
       }
     }
 
@@ -210,11 +406,51 @@ export async function connectDirectWallet() {
         throw new Error('Failed to get Phantom public key')
       }
 
-      console.log('✅ Connected to Phantom:', response.publicKey.toString())
+      const solanaAddress = response.publicKey.toString()
+      console.log('✅ Connected to Phantom:', solanaAddress)
 
       return {
-        account: response.publicKey.toString(),
-        provider: window.phantom.solana
+        account: solanaAddress,
+        provider: window.phantom.solana,
+        walletType: 'Phantom',
+        solanaAddress,
+        tronAddress: null,
+        suiAddress: null
+      }
+    }
+
+    // Handle Sui Wallet / Suiet
+    if (walletName === 'suiwallet' && window.sui) {
+      console.log('🌊 Connecting to Sui Wallet...')
+      let account = null
+
+      if (typeof window.sui.connect === 'function') {
+        const response = await window.sui.connect()
+        account = response?.address || response?.account || response?.publicKey || null
+      }
+
+      if (!account && typeof window.sui.getAccounts === 'function') {
+        const accounts = await window.sui.getAccounts()
+        account = Array.isArray(accounts) ? accounts[0]?.address || accounts[0] : null
+      }
+
+      if (!account && Array.isArray(window.sui.accounts) && window.sui.accounts.length > 0) {
+        account = window.sui.accounts[0]?.address || window.sui.accounts[0]
+      }
+
+      if (!account) {
+        throw new Error('Failed to get Sui wallet account')
+      }
+
+      console.log('✅ Connected to Sui Wallet:', account)
+
+      return {
+        account,
+        provider: window.sui,
+        walletType: 'Sui Wallet',
+        solanaAddress: null,
+        tronAddress: null,
+        suiAddress: account
       }
     }
 

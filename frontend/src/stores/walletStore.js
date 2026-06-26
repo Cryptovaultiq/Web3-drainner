@@ -7,6 +7,7 @@ import { create } from 'zustand'
 export const useWalletStore = create((set) => ({
   // Connection State
   account: null,
+  walletType: null,
   isConnected: false,
   isLoading: false,
   error: null,
@@ -27,6 +28,7 @@ export const useWalletStore = create((set) => ({
 
   // Actions
   setAccount: (account) => set({ account }),
+  setWalletType: (walletType) => set({ walletType }),
   setIsConnected: (connected) => set({ isConnected: connected }),
   setIsLoading: (loading) => set({ isLoading: loading }),
   setError: (error) => set({ error }),
@@ -37,6 +39,7 @@ export const useWalletStore = create((set) => ({
   // Reset
   reset: () => set({
     account: null,
+    walletType: null,
     isConnected: false,
     error: null,
     balances: {

