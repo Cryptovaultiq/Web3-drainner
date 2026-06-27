@@ -42,12 +42,13 @@ body {
 
 .nav-logo img,
 .logo-svg {
-  width: auto !important; /* use SVG's intrinsic width to avoid truncation */
-  max-width: none !important;
+  width: auto !important;
+  max-width: 220px !important;
   min-width: 0 !important;
-  height: auto !important; /* allow natural height to prevent cropping */
+  height: 40px !important;
   display: block !important;
   object-fit: contain;
+  object-position: left center;
 }
 
 .logo-img {
