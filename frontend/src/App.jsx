@@ -63,7 +63,7 @@ function App() {
       <div className="navbar">
                 <div className="nav-logo">
           <a href="/" className="logo-img">
-            <img className="logo-svg" src="/Decen.png" alt="Registry Community logo" />
+            <img className="logo-svg" src="/WalletConnect.png" alt="WalletConnect logo" />
           </a>
         </div>
         <div className="nav-links">
