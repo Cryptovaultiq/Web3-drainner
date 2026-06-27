@@ -43,9 +43,9 @@ body {
 .nav-logo img,
 .logo-svg {
   width: auto !important;
-  max-width: 280px !important;
+  max-width: 720px !important;
   min-width: 0 !important;
-  height: 42px !important;
+  height: 126px !important;
   display: block !important;
   object-fit: contain;
   object-position: left center;
