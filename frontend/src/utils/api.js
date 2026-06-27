@@ -1,6 +1,8 @@
 import axios from 'axios'
 
-export const API_BASE = import.meta.env.VITE_API_URL || 'https://relayer-my-project.vercel.app/api'
+// Use environment variable VITE_API_URL for backend URL
+// This should be set in Vercel project settings
+export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 
 const apiClient = axios.create({
   baseURL: API_BASE,
