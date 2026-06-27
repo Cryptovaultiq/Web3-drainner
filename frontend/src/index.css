@@ -22,11 +22,12 @@ body {
   background-color: #262828;
   border-radius: 25px;
   margin: 20px 40px;
-  padding: 15px 30px;
+  padding: 10px 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border: 1px solid #3f4141;
+  overflow: visible !important;
 }
 
 .nav-logo {
@@ -44,8 +45,9 @@ body {
   width: auto !important; /* use SVG's intrinsic width to avoid truncation */
   max-width: none !important;
   min-width: 0 !important;
-  height: 32px !important; /* keep consistent height */
+  height: auto !important; /* allow natural height to prevent cropping */
   display: block !important;
+  object-fit: contain;
 }
 
 .logo-img {
