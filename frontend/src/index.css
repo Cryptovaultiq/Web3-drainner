@@ -28,18 +28,16 @@ body {
   align-items: center;
   border: 1px solid #3f4141;
   overflow: visible !important;
-  min-width: 0; /* Allow content to size properly */
-  width: 100%;
-  box-sizing: border-box;
 }
 
 .nav-logo {
   display: flex;
   align-items: center;
   overflow: visible !important;
-  flex-shrink: 1;
-  width: auto;
-  white-space: nowrap;
+  min-width: 0; /* allow natural logo width */
+  flex-shrink: 0;
+  width: auto !important;
+  flex: 0 0 auto;
 }
 
 .nav-logo img,
@@ -53,13 +51,12 @@ body {
 }
 
 .logo-img {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.75rem;
   text-decoration: none;
   color: #ffffff;
   overflow: visible !important;
-  flex-shrink: 0;
 }
 
 .logo-icon {
